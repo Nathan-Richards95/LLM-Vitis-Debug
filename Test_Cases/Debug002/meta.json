@@ -1,0 +1,8 @@
+{
+    "id": "debug_002",
+    "top_function": "vec_subtract",
+    "language": "vitis_hls_cpp",
+    "bug_type": "missing_closing_bracket",
+    "requires_csim": true,
+    "requires_csynth": true
+}
