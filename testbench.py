@@ -42,6 +42,33 @@ def load_testCases(tc_path):
 
     return testcase_data
 
+def extract_code(llm_response):
+    """
+    Removes markdown code fences if the LLM returns:
+    ```cpp
+    ...
+    ```
+    """
+    text = llm_response.strip()
+
+    if text.startswith("```"):
+        parts = text.split("```")
+        if len(parts) >= 3:
+            return parts[1].replace("cpp", "", 1).strip()
+
+    return text
+
+
+def write_llm_output(tc_path, llm_response):
+    """
+    Save the LLM's returned code into llm_out.cpp inside the testcase folder.
+    """
+    cleaned_code = extract_code(llm_response)
+    output_path = tc_path / "llm_out.cpp"
+    output_path.write_text(cleaned_code, encoding="utf-8")
+    return output_path
+
+
 
 if __name__ == '__main__':
     testcases = get_testCases()
@@ -62,3 +89,12 @@ if __name__ == '__main__':
         print("Meta:")
         print(data["meta"])
         print("-" * 40)
+
+        # TEMPORARY TEST:
+        # pretend the LLM returned the reference code
+        fake_llm_response = data["ref_code"]
+
+        llm_out_path = write_llm_output(tc, fake_llm_response)
+        print("Wrote LLM output to:", llm_out_path)
+    
+    
