@@ -48,6 +48,33 @@ def load_testCases(tc_path):
 
     return testcase_data
 
+def extract_code(llm_response):
+    """
+    Removes markdown code fences if the LLM returns:
+    ```cpp
+    ...
+    ```
+    """
+    text = llm_response.strip()
+
+    if text.startswith("```"):
+        parts = text.split("```")
+        if len(parts) >= 3:
+            return parts[1].replace("cpp", "", 1).strip()
+
+    return text
+
+
+def write_llm_output(tc_path, llm_response):
+    """
+    Save the LLM's returned code into llm_out.cpp inside the testcase folder.
+    """
+    cleaned_code = extract_code(llm_response)
+    output_path = tc_path / "llm_out.cpp"
+    output_path.write_text(cleaned_code, encoding="utf-8")
+    return output_path
+
+
 
 if __name__ == '__main__':
     #1. iterate through each test case in the test cases directory
