@@ -1,4 +1,8 @@
-#include "ref.cpp"
+// include "ref.cpp"
+
+#include <vector>
+
+void vec_add(std::vector<int> &a, std::vector<int> &b, std::vector<int> &c);
 
 int main()
 {

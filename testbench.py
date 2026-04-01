@@ -1,11 +1,13 @@
 from sys import argv
 
-from transformers import pipeline
+#from transformers import pipeline
 import constants
 import json
 from pathlib import Path
 import Models.Model
 from Models.Llama import Llama
+import subprocess
+import os
 import platform
 
 TEST_CASES_DIR = Path("Test_Cases")
@@ -74,7 +76,27 @@ def write_llm_output(tc_path, llm_response):
     output_path.write_text(cleaned_code, encoding="utf-8")
     return output_path
 
+def run_vitis_case(tc_path, meta, llm_out_path):
+    """
+    Run Vitis HLS on one testcase using the generic Tcl script.
+    """
+    proj_dir = Path("runs") / tc_path.name / "hls_proj"
+    proj_dir.parent.mkdir(parents=True, exist_ok=True)
 
+    top = meta.get("top_function", "")
+    part = meta.get("part", "xc7z020clg400-1")
+    clock = str(meta.get("clock_period", 10.0))
+
+    cmd = [
+        "vitis_hls",
+        "-f", "run_hls.tcl",
+        f"proj_dir={proj_dir}",
+        f"src={llm_out_path}",
+        f"tb={tc_path / 'debug_tb.cpp'}",
+        f"top={top}",
+        f"part={part}",
+        f"clock={clock}",
+    ]
 
 if __name__ == '__main__':
     #1. iterate through each test case in the test cases directory
@@ -98,8 +120,27 @@ if __name__ == '__main__':
     testcases = get_testCases()
     for tc in testcases:
         data = load_testCases(tc)
-        code = f"===BEGIN BROKEN CODE===\n{code}\n===END BROKEN CODE==="
-        output = model.generate_from_text(code, system_prompt=constants.BASE_PROMPT)
+
+        print(f"\n--- Testing {data['name']} ---")
+
+        # For testing only: pretend ref.cpp is the LLM output
+        fake_llm_output = data["ref_code"]
+
+        llm_out_path = write_llm_output(tc, fake_llm_output)
+        print("Wrote fake llm_out.cpp to:", llm_out_path)
+
+        vitis_result = run_vitis_case(tc, data["meta"], llm_out_path)
+
+        print("Vitis return code:", vitis_result["returncode"])
+
+        if vitis_result["returncode"] == 0:
+            print("Vitis run completed.")
+        else:
+            print("Vitis run failed.")
+
+        print("Project dir:", vitis_result["proj_dir"])
+
+        
         #3. grab the output from the LLM
         #4. check the following from the output:
         #   - is the output empty

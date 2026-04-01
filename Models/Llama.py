@@ -1,4 +1,4 @@
-import Model
+from Models import Model
 import constants
 from openai import OpenAi
 
