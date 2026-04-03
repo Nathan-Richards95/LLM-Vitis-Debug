@@ -1,6 +1,6 @@
 from Models import Model
 import constants
-from openai import OpenAi
+from openai import OpenAI
 
 class Llama(Model.BaseLLM):
     def __init__(self, config: Model.GenerationConfig):
