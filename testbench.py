@@ -4,9 +4,10 @@ from transformers import pipeline
 import constants
 import json
 from pathlib import Path
-import Models.Model
-from Models.Llama import Llama
+#import Models.Model
+#from Models.Llama import Llama
 import platform
+import subprocess
 
 TEST_CASES_DIR = Path("Test_Cases")
 
@@ -74,32 +75,74 @@ def write_llm_output(tc_path, llm_response):
     output_path.write_text(cleaned_code, encoding="utf-8")
     return output_path
 
+def run_vitis_case(tc_path, meta, llm_out_path):
+    proj_dir = Path("runs") / tc_path.name / "hls_proj"
+    proj_dir.parent.mkdir(parents=True, exist_ok=True)
 
+    top = meta.get("top_function", "")
+    part = meta.get("part", "xc7z020clg400-1")
+    clock = str(meta.get("clock_period", 10.0))
+
+    cmd = [
+        "vitis_hls",
+        "-f", "run_hls.tcl",
+        f"proj_dir={proj_dir}",
+        f"src={llm_out_path}",
+        f"tb={tc_path / 'debug_tb.cpp'}",
+        f"top={top}",
+        f"part={part}",
+        f"clock={clock}",
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    (proj_dir.parent / "vitis_stdout.txt").write_text(result.stdout)
+    (proj_dir.parent / "vitis_stderr.txt").write_text(result.stderr)
+
+    return result
 
 if __name__ == '__main__':
     #1. iterate through each test case in the test cases directory
     #2. grab the broken code and send it to the LLM
-    model_type = argv[1] if len(argv) > 1 else "gpt5"
-    model = None
-    match model_type:
-        case "llama":
-            config = Models.Model.GenerationConfig(
-                model_name=constants.LLAMA_MODEL,
-                temperature=0.7,
-                max_tokens=2048,
-                top_p=1.0
-            )
-            model = Llama(config=config)
-        case "gpt5":
-            pass  # Handle GPT-5 case
-    if model is None:
-        print(f"Unsupported model type: {model_type}")
-        exit(1)
     testcases = get_testCases()
+
     for tc in testcases:
         data = load_testCases(tc)
-        code = f"===BEGIN BROKEN CODE===\n{code}\n===END BROKEN CODE==="
-        output = model.generate_from_text(code, system_prompt=constants.BASE_PROMPT)
+
+        # Fake LLM output using ref.cpp
+        llm_out_path = write_llm_output(tc, data["ref_code"])
+        print(f"Wrote fake llm_out.cpp: {llm_out_path}")
+
+        result = run_vitis_case(tc, data["meta"], llm_out_path)
+
+        print(f"{tc.name} return code: {result.returncode}")
+        if result.returncode != 0:
+            print("Vitis failed. Check:")
+            print(Path("runs") / tc.name / "vitis_stdout.txt")
+            print(Path("runs") / tc.name / "vitis_stderr.txt")
+        else:
+            print("Vitis completed successfully.")
+    # model_type = argv[1] if len(argv) > 1 else "gpt5"
+    # model = None
+    # match model_type:
+    #     case "llama":
+    #         config = Models.Model.GenerationConfig(
+    #             model_name=constants.LLAMA_MODEL,
+    #             temperature=0.7,
+    #             max_tokens=2048,
+    #             top_p=1.0
+    #         )
+    #         model = Llama(config=config)
+    #     case "gpt5":
+    #         pass  # Handle GPT-5 case
+    # if model is None:
+    #     print(f"Unsupported model type: {model_type}")
+    #     exit(1)
+    # testcases = get_testCases()
+    # for tc in testcases:
+    #     data = load_testCases(tc)
+    #     code = f"===BEGIN BROKEN CODE===\n{code}\n===END BROKEN CODE==="
+    #     output = model.generate_from_text(code, system_prompt=constants.BASE_PROMPT)
         #3. grab the output from the LLM
         #4. check the following from the output:
         #   - is the output empty
