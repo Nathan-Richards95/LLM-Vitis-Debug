@@ -13,3 +13,4 @@ TARGET_CLOCK = 100 #target clock frequency in MHz
 LLAMA_BASE_URL = "http://127.0.0.1:8000/v1"
 LLAMA_API_KEY = "0"
 LLAMA_MODEL = "meta-llama/Meta-Llama-3-8B-Instruct"
+LLAMA_PATH = "/scratch/schekur2/models/llama3.3-70b-hls-trained/"
