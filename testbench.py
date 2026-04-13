@@ -105,13 +105,13 @@ if __name__ == '__main__':
     #1. iterate through each test case in the test cases directory
     #2. grab the broken code and send it to the LLM
     testcases = get_testCases()        
-    model_type = argv[1] if len(argv) > 1 else "gpt5"
+    model_type = argv[1] if len(argv) > 1 else "llama"
     model = None
     match model_type:
         case "llama":
             config = Models.Model.GenerationConfig(
                 model_name=constants.LLAMA_MODEL,
-                temperature=0.7,
+                temperature=0.2,
                 max_tokens=2048,
                 top_p=1.0
             )
@@ -124,8 +124,12 @@ if __name__ == '__main__':
     testcases = get_testCases()
     for tc in testcases:
         data = load_testCases(tc)
-        code = f"===BEGIN BROKEN CODE===\n{code}\n===END BROKEN CODE==="
-        output = model.generate_from_text(code, system_prompt=constants.BASE_PROMPT)
+        code = f"{code}"
+        messages = [
+            {"role": "system", "content": constants.DEBUG_BASE_PROMPT},
+            {"role": "user", "content": f"{code}"}
+        ]
+        output = model.generate(messages=messages)
         #3. grab the output from the LLM
         #4. check the following from the output:
         #   - is the output empty

@@ -28,8 +28,8 @@ if __name__ == "__main__":
 
     print("tokenizing")
     messages = [
-        {"role": "system", "content": constants.BASE_PROMPT},
-        {"role": "user", "content": "===BEGIN BROKEN CODE===\nint main() { int i = 1 }\n===END BROKEN CODE==="}
+        {"role": "system", "content": constants.DEBUG_BASE_PROMPT},
+        {"role": "user", "content": "int main() { int i = 1 }"}
     ]
     print("generating")
     inputs = tokenizer.apply_chat_template(

@@ -1,13 +1,9 @@
+```cpp
 #include <ap_int.h>
 
-#define MAX_ITERATIONS 1024
-
 int main() {
-#pragma HLS ARRAY_PARTITION variable=ap_int<32> type=cyclic dim=1 factor=1
-    int i = 0;
-    for (i = 0; i < MAX_ITERATIONS; i++) {
-#pragma HLS PIPELINE OFF
-#pragma HLS UNROLL factor=16
-        ap_int<32> a = i;
-    }
+#pragma HLS ARRAY_PARTITION variable=a type=cyclic dim=1 factor=8
+    int a[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    int i = 1;
 }
+```
