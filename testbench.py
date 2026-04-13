@@ -7,6 +7,7 @@ from pathlib import Path
 import Models.Model
 from Models.Llama import Llama
 import platform
+import re
 
 TEST_CASES_DIR = Path("Test_Cases")
 
@@ -74,7 +75,17 @@ def write_llm_output(tc_path, llm_response):
     output_path.write_text(cleaned_code, encoding="utf-8")
     return output_path
 
+def has_top_level_cpp_function(code: str, function_name: str) -> bool:
+    # Matches return type + function name + (
+    pattern = rf"""
+        ^\s*                                  # start of line
+        (?:[\w:<>\*&]+\s+)+                   # return type (very flexible)
+        {function_name}\s*                    # function name
+        \([^;]*\)\s*                          # arguments
+        \{{                                   # opening brace (definition, not declaration)
+    """
 
+    return re.search(pattern, code, re.MULTILINE | re.VERBOSE) is not None
 
 if __name__ == '__main__':
     #1. iterate through each test case in the test cases directory
@@ -98,14 +109,24 @@ if __name__ == '__main__':
     testcases = get_testCases()
     for tc in testcases:
         data = load_testCases(tc)
-        code = f"===BEGIN BROKEN CODE===\n{code}\n===END BROKEN CODE==="
-        output = model.generate_from_text(code, system_prompt=constants.BASE_PROMPT)
+        code = f"===BEGIN BROKEN CODE===\n{data['broken_code']}\n===END BROKEN CODE==="
         #3. grab the output from the LLM
+        output = model.generate_from_text(code, system_prompt=constants.BASE_PROMPT)
         #4. check the following from the output:
         #   - is the output empty
-        #   - is the response just code
+        #   - is the response just code (are comments ok?)
         #   - does the top level function still exist
         #   - required includes still exist
+        parseable_output = True
+        if output.strip() == "":
+            parseable_output = False
+            error = "LLM returned an empty response."
+            print(f"Error for test case {data['name']}: {error}")
+        
+        if has_top_level_cpp_function(output, data['meta']['top_function']) == False:
+            print(f"Top level function is missing in the output for test case {data['name']}.")
+            error = "Missing top level function."
+            parseable_output = False
         #5. Attempt to run the tcl file to see if it synthesizes and simulates without error
         #6. Grab the output json and record the following:
         #   - csim success
@@ -123,6 +144,7 @@ if __name__ == '__main__':
         #     "benchmark_id": "debug_001",
         #     "bug_type": "missing_semicolon",
         #     "parseable_output": true,
+        #     "error_types": [],
         #     "top_function_present": true,
         #     "csim_success": true,
         #     "correctness_pass": true,
