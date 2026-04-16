@@ -25,7 +25,7 @@ def get_testCases():
     return testCase
     
 def load_testCases(tc_path):
-    broken_path = tc_path / "broken.cpp"
+    broken_path = tc_path / "broken.cc"
     meta_path = tc_path / "meta.json"
     tb_path = tc_path / "debug_tb.cpp"
     ref_path = tc_path / "ref.cpp"

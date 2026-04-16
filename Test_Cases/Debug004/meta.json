@@ -1,0 +1,8 @@
+{
+  "id": "debug_004",
+  "top_function": "add_one",
+  "language": "versal_aie_cpp",
+  "bug_type": "syntax_error",
+  "requires_x86_sim": true,
+  "requires_aie_sim": true
+}
