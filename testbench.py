@@ -4,11 +4,20 @@ from sys import argv
 import constants
 import json
 from pathlib import Path
+<<<<<<< HEAD
 import Models.Model
 from Models.Llama import Llama
 import subprocess
 import os
+=======
+#import Models.Model
+#from Models.Llama import Llama
+>>>>>>> a64b1bfd208dadb153ee4a5eeaf4e7878cf307a5
 import platform
+import subprocess
+import re
+from Models.Model import GenerationConfig
+from Models.Llama import Llama
 
 TEST_CASES_DIR = Path("Test_Cases")
 
@@ -23,7 +32,7 @@ def get_testCases():
     return testCase
     
 def load_testCases(tc_path):
-    broken_path = tc_path / "broken.cpp"
+    broken_path = tc_path / "broken.cc"
     meta_path = tc_path / "meta.json"
     tb_path = tc_path / "debug_tb.cpp"
     ref_path = tc_path / "ref.cpp"
@@ -77,9 +86,12 @@ def write_llm_output(tc_path, llm_response):
     return output_path
 
 def run_vitis_case(tc_path, meta, llm_out_path):
+<<<<<<< HEAD
     """
     Run Vitis HLS on one testcase using the generic Tcl script.
     """
+=======
+>>>>>>> a64b1bfd208dadb153ee4a5eeaf4e7878cf307a5
     proj_dir = Path("runs") / tc_path.name / "hls_proj"
     proj_dir.parent.mkdir(parents=True, exist_ok=True)
 
@@ -97,17 +109,39 @@ def run_vitis_case(tc_path, meta, llm_out_path):
         f"part={part}",
         f"clock={clock}",
     ]
+<<<<<<< HEAD
+=======
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    (proj_dir.parent / "vitis_stdout.txt").write_text(result.stdout)
+    (proj_dir.parent / "vitis_stderr.txt").write_text(result.stderr)
+
+    return result
+def has_top_level_cpp_function(code: str, function_name: str) -> bool:
+    # Matches return type + function name + (
+    pattern = rf"""
+        ^\s*                                  # start of line
+        (?:[\w:<>\*&]+\s+)+                   # return type (very flexible)
+        {function_name}\s*                    # function name
+        \([^;]*\)\s*                          # arguments
+        \{{                                   # opening brace (definition, not declaration)
+    """
+
+    return re.search(pattern, code, re.MULTILINE | re.VERBOSE) is not None
+>>>>>>> a64b1bfd208dadb153ee4a5eeaf4e7878cf307a5
 
 if __name__ == '__main__':
     #1. iterate through each test case in the test cases directory
     #2. grab the broken code and send it to the LLM
-    model_type = argv[1] if len(argv) > 1 else "gpt5"
+    testcases = get_testCases()        
+    model_type = argv[1] if len(argv) > 1 else "llama"
     model = None
     match model_type:
         case "llama":
-            config = Models.Model.GenerationConfig(
-                model_name=constants.LLAMA_MODEL,
-                temperature=0.7,
+            config = GenerationConfig(
+                model_name=constants.LLAMA_MODEL_NAME,
+                temperature=0.2,
                 max_tokens=2048,
                 top_p=1.0
             )
@@ -120,6 +154,7 @@ if __name__ == '__main__':
     testcases = get_testCases()
     for tc in testcases:
         data = load_testCases(tc)
+<<<<<<< HEAD
 
         print(f"\n--- Testing {data['name']} ---")
 
@@ -141,12 +176,32 @@ if __name__ == '__main__':
         print("Project dir:", vitis_result["proj_dir"])
 
         
+=======
+        code = f"{data['broken_code']}"
+        messages = [
+            {"role": "system", "content": constants.DEBUG_BASE_PROMPT},
+            {"role": "user", "content": f"{code}"}
+        ]
+        output = model.generate(messages=messages)
+        print(f"LLM output for test case {data['name']}:\n{output.text}\n")
+>>>>>>> a64b1bfd208dadb153ee4a5eeaf4e7878cf307a5
         #3. grab the output from the LLM
         #4. check the following from the output:
         #   - is the output empty
-        #   - is the response just code
+        #   - is the response just code (are comments ok?)
         #   - does the top level function still exist
         #   - required includes still exist
+        parseable_output = True
+        error = ""
+        if vars(output)['text'].strip() == "":
+            parseable_output = False
+            error = "LLM returned an empty response."
+            print(f"Error for test case {data['name']}: {error}")
+        
+        if has_top_level_cpp_function(vars(output)['text'], data['meta']['top_function']) == False:
+            print(f"Top level function is missing in the output for test case {data['name']}.")
+            error = "Missing top level function."
+            parseable_output = False
         #5. Attempt to run the tcl file to see if it synthesizes and simulates without error
         #6. Grab the output json and record the following:
         #   - csim success
@@ -164,6 +219,7 @@ if __name__ == '__main__':
         #     "benchmark_id": "debug_001",
         #     "bug_type": "missing_semicolon",
         #     "parseable_output": true,
+        #     "error_types": [],
         #     "top_function_present": true,
         #     "csim_success": true,
         #     "correctness_pass": true,

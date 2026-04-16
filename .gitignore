@@ -1,4 +1,5 @@
 .env
+<<<<<<< HEAD
 .venv/
 
 
@@ -7,4 +8,9 @@ __pycache__/
 *.pyc
 
 # Vitis runs (recommended)
+=======
+.venv
+__pycache__/
+*.pyc
+>>>>>>> a64b1bfd208dadb153ee4a5eeaf4e7878cf307a5
 runs/
