@@ -1,0 +1,15 @@
+{
+  "name": "aie_exp3_py",
+  "type": "AI_ENGINE",
+  "platform": "/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/base_platforms/xilinx_vek280_base_202410_1/xilinx_vek280_base_202410_1.xpfm",
+  "configuration": {
+    "componentType": "AI_ENGINE",
+    "aieGraphFiles": [
+      "lab4/src/aie_top_all.cpp"
+    ],
+    "aieCompilerConfigurations": [],
+    "configFiles": [
+      "/home/nrricha2/rc/project/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/aiecompiler.cfg"
+    ]
+  }
+}

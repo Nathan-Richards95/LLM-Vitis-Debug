@@ -1,6 +1,16 @@
 .env
-.venv
+.venv/
+
+
+# Python cache
 __pycache__/
 *.pyc
+
+# Vitis runs (recommended)
 runs/
 aie_testbench_examples.csv
+vitis_journal*
+vitis_journal.py
+
+#unused
+Unused/*
