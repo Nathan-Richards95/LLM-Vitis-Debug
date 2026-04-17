@@ -27,26 +27,27 @@ def get_testCases():
 def load_testCases(tc_path):
     broken_path = tc_path / "broken.cc"
     meta_path = tc_path / "meta.json"
-    tb_path = tc_path / "debug_tb.cpp"
-    ref_path = tc_path / "ref.cpp"
+    ref_path = tc_path / "ref" / "ref.cpp"
+    graph_path = tc_path / "shared" / "graph.cpp"
+    host_path = tc_path / "shared" / "host.cpp"
 
     testcase_data = {
         "name": tc_path.name,
         "broken_code": "",
         "meta": {},
-        "tb_code": "",
-        "ref_code": ""
+        "graph_code": "",
+        "ref_code": "",
+        "host_code": ""
     }
     if broken_path.exists():
         testcase_data["broken_code"] = broken_path.read_text(encoding="utf-8")
-
     if meta_path.exists():
         with open(meta_path, "r", encoding="utf-8") as f:
             testcase_data["meta"] = json.load(f)
-
-    if tb_path.exists():
-        testcase_data["tb_code"] = tb_path.read_text(encoding="utf-8")
-
+    if graph_path.exists():
+        testcase_data["graph_code"] = graph_path.read_text(encoding="utf-8")
+    if host_path.exists():
+        testcase_data["host_code"] = host_path.read_text(encoding="utf-8")
     if ref_path.exists():
         testcase_data["ref_code"] = ref_path.read_text(encoding="utf-8")
 
@@ -118,7 +119,7 @@ def has_top_level_cpp_function(code: str, function_name: str) -> bool:
 if __name__ == '__main__':
     #1. iterate through each test case in the test cases directory
     #2. grab the broken code and send it to the LLM
-    testcases = get_testCases()        
+    testcases = get_testCases()
     model_type = argv[1] if len(argv) > 1 else "llama"
     model = None
     match model_type:
@@ -137,6 +138,7 @@ if __name__ == '__main__':
         exit(1)
     testcases = get_testCases()
     for tc in testcases:
+        print(f"Processing test case: {tc.name}")
         data = load_testCases(tc)
         code = f"{data['broken_code']}"
         messages = [
@@ -152,16 +154,23 @@ if __name__ == '__main__':
         #   - does the top level function still exist
         #   - required includes still exist
         parseable_output = True
-        error = ""
+        error = []
+        empty = False
         if vars(output)['text'].strip() == "":
             parseable_output = False
-            error = "LLM returned an empty response."
+            error.append("LLM returned an empty response.")
+            empty = True
             print(f"Error for test case {data['name']}: {error}")
+        print(f'{data["name"]} is not empty') if not empty else print(f'{data["name"]} is empty')
         
+        has_top = True
         if has_top_level_cpp_function(vars(output)['text'], data['meta']['top_function']) == False:
             print(f"Top level function is missing in the output for test case {data['name']}.")
-            error = "Missing top level function."
+            error.append("Missing top level function.")
             parseable_output = False
+            has_top = False
+
+        print(f'{data["name"]} has top level function {data["meta"]["top_function"]}') if has_top else print(f'{data["name"]} is missing top level function {data["meta"]["top_function"]}')
         #5. Attempt to run the tcl file to see if it synthesizes and simulates without error
         #6. Grab the output json and record the following:
         #   - csim success
@@ -181,7 +190,6 @@ if __name__ == '__main__':
         #     "parseable_output": true,
         #     "error_types": [],
         #     "top_function_present": true,
-        #     "csim_success": true,
         #     "correctness_pass": true,
         #     "csynth_success": true,
         #     "compiler_errors": [],

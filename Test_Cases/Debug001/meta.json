@@ -1,0 +1,5 @@
+{
+  "id": "debug_001",
+  "top_function": "merge_sort",
+  "bug_type": "missing_semicolon"
+}
