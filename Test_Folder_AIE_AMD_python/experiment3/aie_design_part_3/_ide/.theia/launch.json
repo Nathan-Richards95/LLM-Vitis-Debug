@@ -1,0 +1,60 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "aie_design_x86_1",
+			"debugType": "x86simulator",
+			"type": "gdb",
+			"x86SimOptions": "${workspaceFolder}/aie_design/build/x86sim/Work/options/x86sim.options",
+			"request": "launch",
+			"target": "${workspaceFolder}/aie_design/build/x86sim/Work/pthread/sim.out",
+			"cwd": "${workspaceFolder}/aie_design/build/x86sim",
+			"gdbpath": "${env:XILINX_VITIS}/bin/xgdb",
+			"valuesFormatting": "prettyPrinters"
+		},
+		{
+			"type": "tcf-debug",
+			"request": "launch",
+			"name": "aie_design_aiesim_1",
+			"debugType": "aiesimulator",
+			"autoAttachProcessChildren": false,
+			"target": {
+				"targetConnectionId": "XRTServer",
+				"peersIniPath": "../../../.wsdata/.peers.ini",
+				"context": "MemSock"
+			},
+			"aieSimulatorOptions": {
+				"enablePipelineView": false,
+				"packageDirectory": "./Work",
+				"inputDirectory": "../..",
+				"additionalArgs": "",
+				"trace": {
+					"enableTrace": true,
+					"traceType": "onlineWdb",
+					"vcdFileName": "foo",
+					"generateXpe": false,
+					"traceModules": {
+						"io": true,
+						"dma": true,
+						"memory": true,
+						"core": true,
+						"shim": true,
+						"streamSwitch": true
+					},
+					"columnSelectionForTrace": [],
+					"rowSelectionForTrace": [],
+					"timeWindowForTrace": {
+						"start": "",
+						"end": ""
+					}
+				},
+				"profile": {
+					"enableProfiling": true,
+					"profileAllCores": true,
+					"cores": ""
+				}
+			},
+			"internalConsoleOptions": "openOnSessionStart"
+		}
+	]
+}
