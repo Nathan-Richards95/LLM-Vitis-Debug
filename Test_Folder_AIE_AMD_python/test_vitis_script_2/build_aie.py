@@ -37,10 +37,10 @@ def main():
     ref_dir = case_root / "ref"
     llm_dir = case_root / "llm_output"
 
-    graph_file = shared_dir / "graph.cpp"
+    graph_file = ref_dir / "graph.cpp"
     host_file = shared_dir / "host.cpp"        # not used in AIE component build
-    broken_file = shared_dir / "broken.cc"
-    ref_file = ref_dir / "ref.cc"
+    broken_file = shared_dir / "broken.cpp"
+    ref_file = ref_dir / "ref.cpp"
     llm_file = llm_dir / "llm_out.cpp"
     cfg_file = case_root / "aiecompiler.cfg"   # optional
 
@@ -62,8 +62,10 @@ def main():
     # Select candidate source for this build
     if mode == "ref":
         selected_source = ref_file
+        graph_file = ref_dir / "graph.cpp"  # graph.cpp references ref.cc in this mode
     elif mode == "llm":
         selected_source = llm_file
+        graph_file = llm_dir / "graph.cpp"  # graph.cpp references llm_out.cpp in this mode
     else:
         selected_source = broken_file
 
@@ -148,7 +150,7 @@ def main():
 
     # Top-level file path should be relative to the imported component contents.
     # Since we imported 'shared', graph.cpp should live at shared/graph.cpp in the component.
-    top_file = "shared/graph.cpp"
+    top_file = "ref/graph.cpp"
     aie_comp.update_top_level_file(top_file)
     print(f"Set top-level file to: {top_file}")
 
