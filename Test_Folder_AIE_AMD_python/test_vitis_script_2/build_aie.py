@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 from pathlib import Path
+import subprocess
 
 try:
     import vitis
@@ -29,6 +30,7 @@ def main():
 
     mode = sys.argv[1]
 
+
     root = Path(__file__).resolve().parent
     case_root = Path("Test_Cases/Debug001")
     workspace = root / "py_workspace"
@@ -43,6 +45,8 @@ def main():
     ref_file = ref_dir / "ref.cpp"
     llm_file = llm_dir / "llm_out.cpp"
     cfg_file = case_root / "aiecompiler.cfg"   # optional
+
+    input_file = shared_dir / "input.txt" 
 
     platform = os.environ.get("AIE_PLATFORM")
     if not platform:
@@ -150,7 +154,14 @@ def main():
 
     # Top-level file path should be relative to the imported component contents.
     # Since we imported 'shared', graph.cpp should live at shared/graph.cpp in the component.
-    top_file = "ref/graph.cpp"
+    top_folder = None
+    if mode == "ref":
+        top_folder = "ref"
+    elif mode == "llm":
+        top_folder = "llm_output"
+    else:
+        top_folder = "."  # graph.cpp is directly in shared for the broken case
+    top_file = f"{top_folder}/graph.cpp"
     aie_comp.update_top_level_file(top_file)
     print(f"Set top-level file to: {top_file}")
 
@@ -158,8 +169,38 @@ def main():
     aie_comp.build(target="x86sim")
     print("x86sim build complete.")
 
+    # Put PLIO input where x86sim will actually look for it
+    x86_sim_dir = workspace / component_name / "build" / "x86sim"
+    data_dir = x86_sim_dir / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    src_file = input_file
+    dst_file = data_dir / "PhaseIn_0.txt"
+
+    if not src_file.exists():
+        fail(f"Input file not found: {src_file}")
+
+    shutil.copy(src_file, dst_file)
+    print(f"Copied x86sim input to: {dst_file}")
+
+    print("Running x86sim executable...")
+    subprocess.run(
+        ["x86simulator"],
+        cwd=x86_sim_dir,
+        check=True
+    )
+    print("x86sim execution complete.")
+
     print("\nBuilding hw...")
     aie_comp.build(target="hw")
+    x86_sim_output = Path(workspace) / component_name / "build" / "x86sim" / "x86simulator_output" / "data" / "Output_0.txt"
+    shared_output = shared_dir / "output.txt"
+
+    if not x86_sim_output.exists():
+        fail(f"x86sim output file not found: {x86_sim_output}")
+
+    shared_output.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(x86_sim_output, shared_output)
     print("hw build complete.")
 
     print("\nComponent report:")

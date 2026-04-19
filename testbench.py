@@ -4,15 +4,10 @@ from sys import argv
 import constants
 import json
 from pathlib import Path
-<<<<<<< HEAD
 import Models.Model
 from Models.Llama import Llama
 import subprocess
 import os
-=======
-#import Models.Model
-#from Models.Llama import Llama
->>>>>>> a64b1bfd208dadb153ee4a5eeaf4e7878cf307a5
 import platform
 import subprocess
 import re
