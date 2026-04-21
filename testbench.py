@@ -13,6 +13,7 @@ import subprocess
 import re
 from Models.Model import GenerationConfig
 from Models.Llama import Llama
+from helpers import vitis_helper
 
 TEST_CASES_DIR = Path("Test_Cases")
 
@@ -26,18 +27,20 @@ def get_testCases():
 
     return testCase
     
-def load_testCases(tc_path):
-    broken_path = tc_path / "broken.cc"
+def load_testCases(tc_path, model_type):
+    broken_path = tc_path / "broken" / "broken.cpp"
     meta_path = tc_path / "meta.json"
+    model_graph_path = tc_path / model_type / "graph.cpp"
+    ref_graph_path = tc_path / "ref" / "graph.cpp"
     ref_path = tc_path / "ref" / "ref.cpp"
-    graph_path = tc_path / "shared" / "graph.cpp"
     host_path = tc_path / "shared" / "host.cpp"
 
     testcase_data = {
         "name": tc_path.name,
         "broken_code": "",
         "meta": {},
-        "graph_code": "",
+        "model_graph_code": "",
+        "ref_graph_code": "",
         "ref_code": "",
         "host_code": ""
     }
@@ -46,8 +49,12 @@ def load_testCases(tc_path):
     if meta_path.exists():
         with open(meta_path, "r", encoding="utf-8") as f:
             testcase_data["meta"] = json.load(f)
-    if graph_path.exists():
-        testcase_data["graph_code"] = graph_path.read_text(encoding="utf-8")
+    if model_graph_path.exists():
+        testcase_data["model_graph_code"] = model_graph_path.read_text(encoding="utf-8")
+    if ref_graph_path.exists():
+        testcase_data["ref_graph_code"] = ref_graph_path.read_text(encoding="utf-8")
+    if ref_path.exists():
+        testcase_data["ref_code"] = ref_path.read_text(encoding="utf-8")
     if host_path.exists():
         testcase_data["host_code"] = host_path.read_text(encoding="utf-8")
     if ref_path.exists():
@@ -72,40 +79,15 @@ def extract_code(llm_response):
     return text
 
 
-def write_llm_output(tc_path, llm_response):
+def write_llm_output(tc_path, model_type, llm_response):
     """
     Save the LLM's returned code into llm_out.cpp inside the testcase folder.
     """
     cleaned_code = extract_code(llm_response)
-    output_path = tc_path / "llm_out.cpp"
+    output_path = tc_path / model_type / "llm_out.cpp"
     output_path.write_text(cleaned_code, encoding="utf-8")
     return output_path
 
-def run_vitis_case(tc_path, meta, llm_out_path):
-    proj_dir = Path("runs") / tc_path.name / "hls_proj"
-    proj_dir.parent.mkdir(parents=True, exist_ok=True)
-
-    top = meta.get("top_function", "")
-    part = meta.get("part", "xc7z020clg400-1")
-    clock = str(meta.get("clock_period", 10.0))
-
-    cmd = [
-        "vitis_hls",
-        "-f", "run_hls.tcl",
-        f"proj_dir={proj_dir}",
-        f"src={llm_out_path}",
-        f"tb={tc_path / 'debug_tb.cpp'}",
-        f"top={top}",
-        f"part={part}",
-        f"clock={clock}",
-    ]
-
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    (proj_dir.parent / "vitis_stdout.txt").write_text(result.stdout)
-    (proj_dir.parent / "vitis_stderr.txt").write_text(result.stderr)
-
-    return result
 def has_top_level_cpp_function(code: str, function_name: str) -> bool:
     # Matches return type + function name + (
     pattern = rf"""
@@ -124,24 +106,22 @@ if __name__ == '__main__':
     testcases = get_testCases()
     model_type = argv[1] if len(argv) > 1 else "llama"
     model = None
-    match model_type:
-        case "llama":
-            config = GenerationConfig(
-                model_name=constants.LLAMA_MODEL_NAME,
-                temperature=0.2,
-                max_tokens=2048,
-                top_p=1.0
-            )
-            model = Llama(config=config)
-        case "gpt5":
-            pass  # Handle GPT-5 case
+    if model_type == "llama":
+        config = GenerationConfig(
+                    model_name=constants.LLAMA_MODEL_NAME,
+                    temperature=0.2,
+                    max_tokens=2048,
+                    top_p=1.0
+                )
+        model = Llama(config=config)
+    #case for if the model is not implemented
     if model is None:
         print(f"Unsupported model type: {model_type}")
         exit(1)
     testcases = get_testCases()
     for tc in testcases:
         print(f"Processing test case: {tc.name}")
-        data = load_testCases(tc)
+        data = load_testCases(tc, model_type)
         code = f"{data['broken_code']}"
         messages = [
             {"role": "system", "content": constants.DEBUG_BASE_PROMPT},
@@ -171,9 +151,18 @@ if __name__ == '__main__':
             error.append("Missing top level function.")
             parseable_output = False
             has_top = False
-
+        # save llm output
+        write_llm_output(tc, model_type, vars(output)['text'])
         print(f'{data["name"]} has top level function {data["meta"]["top_function"]}') if has_top else print(f'{data["name"]} is missing top level function {data["meta"]["top_function"]}')
-        #5. Attempt to run the tcl file to see if it synthesizes and simulates without error
+        #5. Attempt to build in x86 and hw
+        sim = vitis_helper.Vitis_Helper(
+            tc.name,
+            model_type,
+        )
+        print(f'Building reference implementation for test case {data["name"]}...')
+        sim.build_component("ref")
+        print(f'Building LLM output for test case {data["name"]}...')
+        sim.build_component(model_type)
         #6. Grab the output json and record the following:
         #   - csim success
         #   - csynth success

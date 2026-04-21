@@ -16,4 +16,6 @@ TARGET_CLOCK = 100 #target clock frequency in MHz
 
 #Llama constants
 LLAMA_PATH = "/scratch/schekur2/models/llama3.3-70b-hls-trained/"
-LLAMA_MODEL_NAME = "LLaMa"
+LLAMA_MODEL_NAME = "llama"
+
+VALID_VITIS_MODES = ["ref", LLAMA_MODEL_NAME, LLAMA_MODEL_NAME.lower()]

@@ -6,3 +6,6 @@ Steps to launch vitis python script:
 
 Testbench in general
 1. pip install -U transformers kernels torch
+
+Vitis_Helper
+1. pip install "protobuf==3.20*"

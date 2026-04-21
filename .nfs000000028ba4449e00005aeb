@@ -1,0 +1,4 @@
+# IPython log file
+
+get_ipython().run_line_magic('run', 'testbench.py')
+get_ipython().run_line_magic('run', 'testbench.py')
