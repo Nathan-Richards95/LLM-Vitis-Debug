@@ -9,9 +9,9 @@
 #endif
 #include ""aie_api/aie_adf.hpp""
 #include ""aie_api/utils.hpp""
-#include ""library/kernel_api_utils.hpp""
-#include ""library/merge_sort_traits.hpp""
-#include ""library/merge_sort.hpp""
+#include ""kernel_api_utils.hpp""
+#include ""merge_sort_traits.hpp""
+#include ""merge_sort.hpp""
 
 #ifdef __X86SIM__
 // #define _DSPLIB_MERGE_SORT_HPP_DEBUG_

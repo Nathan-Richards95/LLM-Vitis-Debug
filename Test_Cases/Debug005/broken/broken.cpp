@@ -1,6 +1,3 @@
-#ifndef _DSPLIB_MERGE_SORT_CPP_
-#define _DSPLIB_MERGE_SORT_CPP_
-
 #include <adf.h>
 
 // if we use 1kb registers -> aie api uses 2x512b registers for 1024b so we need this for QoR
@@ -9,9 +6,9 @@
 #endif
 #include ""aie_api/aie_adf.hpp""
 #include ""aie_api/utils.hpp""
-#include ""library/kernel_api_utils.hpp""
-#include ""library/merge_sort_traits.hpp""
-#include ""library/merge_sort.hpp""
+#include ""kernel_api_utils.hpp""
+#include ""merge_sort_traits.hpp""
+#include ""merge_sort.hpp""
 
 #ifdef __X86SIM__
 // #define _DSPLIB_MERGE_SORT_HPP_DEBUG_
@@ -111,7 +108,9 @@ INLINE_DECL void kernelClass<TT_DATA, TP_IN_API, TP_OUT_API, TP_DIM, TP_ASCENDIN
         if
             constexpr(TP_OUT_API == kCascAPI) { writeincr(outInterface.outCascade, v_Out); }
         else {
-            writeincr(outInterface.outStream, v_Out);
+// BUG_INJECTED: Removed output token write to create producer/consumer imbalance and potential stream deadlock.
+// ORIGINAL: writeincr(outInterface.outStream, v_Out);
+
         }
     }
 };
