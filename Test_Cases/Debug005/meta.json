@@ -1,0 +1,13 @@
+{
+  "id": "Debug005",
+  "type": "aie_runtime_deadlock",
+  "bug_class": "missing_output_stream_write",
+  "broken_entry": "broken/broken.cc",
+  "reference_entry": "ref/ref.cc",
+  "graph_cpp": "broken/graph.cpp",
+  "graph_h": "broken/graph.h",
+  "shared_dir": "shared",
+  "data_dir": "data",
+  "expected_failure": "deadlock",
+  "expected_fix": "restore writeincr(outInterface.outStream, v_Out)"
+}

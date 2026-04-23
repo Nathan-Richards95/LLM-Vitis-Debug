@@ -64,7 +64,7 @@ libadf.a
 )
 
 set(_AIE_CFG
-/home/nrricha2/rc/project/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/aiecompiler.cfg
+/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/aiecompiler.cfg
 )
 
 ##  End of variables auto-updated by the tool ##

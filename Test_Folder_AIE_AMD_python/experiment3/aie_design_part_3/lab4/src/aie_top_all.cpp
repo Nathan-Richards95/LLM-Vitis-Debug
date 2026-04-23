@@ -20,8 +20,7 @@ int main(int argc, char **argv) {
         "/data/courses/class_cse494598cen571spring2026_aaror112/Lab4/Stego/stego_group_27.png";
     const char *filename_key =
         "/data/courses/class_cse494598cen571spring2026_aaror112/Lab4/Key_Images/key_group_27.png";
-    const char *filename_out =
-        "/home/jgvincen/rcout/lab4/outputs/decrypted_image_out.png";
+    const char *filename_out = "decrypted_image_out.png";
 
     std::vector<unsigned char> image;
     std::vector<unsigned char> imageKey;

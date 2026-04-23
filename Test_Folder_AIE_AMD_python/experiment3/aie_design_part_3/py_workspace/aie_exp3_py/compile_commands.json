@@ -1,14 +1,14 @@
 [
   {
-    "directory": "/home/nrricha2/rc/project/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/_ide/_build",
+    "directory": "/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/_ide/_build",
     "arguments": [
       "/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/aietools/tps/lnx64/gcc/bin/g++",
       "-c",
       "-I/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/aietools/include",
       "-I/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/aietools/include",
-      "-I/home/nrricha2/rc/project/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/lab4/src",
-      "/home/nrricha2/rc/project/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/lab4/src/aie_top_all.cpp"
+      "-I/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/lab4/src",
+      "/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/lab4/src/aie_top_all.cpp"
     ],
-    "file": "/home/nrricha2/rc/project/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/lab4/src/aie_top_all.cpp"
+    "file": "/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/py_workspace/aie_exp3_py/lab4/src/aie_top_all.cpp"
   }
 ]
