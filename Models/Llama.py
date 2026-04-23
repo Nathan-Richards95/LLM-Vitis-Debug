@@ -4,10 +4,10 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 class Llama(Model.BaseLLM):
-    def __init__(self, config: Model.GenerationConfig):
+    def __init__(self, config: Model.GenerationConfig, model_path:str=constants.LLAMA_PATH):
         super().__init__(config)
         self.modelName = "LLaMA"
-        self.model_path = constants.LLAMA_PATH
+        self.model_path = model_path
         self.quantization_config = BitsAndBytesConfig(
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",

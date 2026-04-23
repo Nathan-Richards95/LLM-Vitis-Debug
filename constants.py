@@ -1,4 +1,17 @@
-DEBUG_BASE_PROMPT = """
+DEBUG_BASE_PROMPT = f"""You are fixing a broken C++ source file for AMD Vitis/AIE.
+
+Requirements:
+- Return the COMPLETE corrected source file
+- Do NOT return partial code
+- Do NOT omit unchanged code
+- Do NOT add explanations
+- Do NOT use markdown fences
+- Preserve all includes, declarations, and unchanged functions
+- Only fix the bug(s) needed
+"""
+
+
+"""
     INSTRUCTION:
     You are given broken Vitis HLS C/C++ code.
     Repair the code so it is valid and preserves the intended behavior.
