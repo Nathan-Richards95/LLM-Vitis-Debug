@@ -1,5 +1,5 @@
 {
   "id": "debug_001",
-  "top_function": "merge_sort",
+  "top_function": "SingleStream",
   "bug_type": "missing_semicolon"
 }

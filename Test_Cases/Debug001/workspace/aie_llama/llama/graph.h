@@ -57,7 +57,7 @@ public:
         adf::connect<>(in.out[0], k.in[0]);
         adf::connect<>(k.out[0], out.in[0]);
 
-        adf::source(k)  = "ref.cpp";
+        adf::source(k)  = "llm_out.cpp";
         adf::headers(k) = { "../shared/FirSingleStream.h" };
         adf::runtime<ratio>(k) = 0.9;
     }

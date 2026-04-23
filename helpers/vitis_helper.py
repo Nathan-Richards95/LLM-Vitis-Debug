@@ -1,9 +1,14 @@
 import vitis
 import constants
+from pathlib import Path
+import os
+import sys
+import shutil
+import subprocess
 
 class Vitis_Helper:
     def __init__(self, tc_name: str, model_name: str, verbose: bool = True):
-        self.tc_path = Path("Test_cases") / tc_name
+        self.tc_path = Path("Test_Cases") / tc_name
         self.workspace = self.tc_path / "workspace"
         self.shared_dir = self.tc_path / "shared"
         self.ref_dir = self.tc_path / "ref"
@@ -14,12 +19,12 @@ class Vitis_Helper:
         self.input_file = self.shared_dir / "input.txt"
 
     #mode can be either "ref", or "<model_name>" (e.g. "llama")
-    def build_project(self, mode: str):
+    def build_component(self, mode: str):
         # Build the project using Vitis
         if mode not in constants.VALID_VITIS_MODES:
             print(f"Invalid mode: {mode}. Valid modes are: {constants.VALID_VITIS_MODES}")
             return False
-        kernel_file = self.tc_path / mode / "ref.cpp"
+        kernel_file = self.tc_path / mode / f"{mode}.cpp"
         graph_file = self.tc_path / mode / "graph.cpp"
 
         self.workspace.mkdir(parents=True, exist_ok=True)
@@ -36,12 +41,20 @@ class Vitis_Helper:
 
         aie_comp = None
         template_errors = []
+        platform = os.environ.get("AIE_PLATFORM")
+        if not platform:
+            print(
+                "AIE_PLATFORM environment variable is not set.\n"
+                "Example:\n"
+                "  export AIE_PLATFORM=/path/to/Xilinx_vek280_base_202410_1.xpfm"
+            )
+            return False
 
         for template_name in ["empty", "empty_aie_component"]:
             try:
                 aie_comp = client.create_aie_component(
                     name=component_name,
-                    platform=constants.FPGA_PART,
+                    platform=platform,
                     template=template_name
                 )
                 break
@@ -55,10 +68,17 @@ class Vitis_Helper:
             return False
 
         print(f'Created AI Engine component') if self.verbose else None
-        files_to_import = ["shared", kernel_file, graph_file]
+        from_loc = str(self.tc_path)
+
+        files_to_import = [
+            "shared",
+            f"{mode}"
+        ]
+
+        aie_comp.import_files(from_loc=from_loc, files=files_to_import)
 
         print(f"Importing source tree pieces: {files_to_import}") if self.verbose else None
-        aie_comp.import_files(from_loc=str(case_root), files=files_to_import)
+        #aie_comp.import_files(from_loc=str(self.tc_path / mode), files=files_to_import)
 
         # optional config file
         cfg_file = self.tc_path / "aiecompiler.cfg"
@@ -79,14 +99,23 @@ class Vitis_Helper:
         print(f"Set top-level file to: {top_file}") if self.verbose else None
 
         print("\n Building x86sim...") if self.verbose else None
-        aie_comp.build(target="x86sim", clean=True)
+        try:
+            print("Building x86sim...")
+            aie_comp.build(target="x86sim")
+        except Exception as e:
+            print(f"x86sim build failed: {e}")
+            try:
+                print(aie_comp.get_report())
+            except Exception:
+                pass
+            raise
         print("x86sim build complete.\n") if self.verbose else None
 
         x86_sim_dir = self.workspace / component_name / "build" / "x86sim"
         data_dir = x86_sim_dir / "data"
         data_dir.mkdir(parents=True, exist_ok=True)
         src_file = self.input_file
-        dst_file = datra_dir / "PhaseIn_0.txt"
+        dst_file = data_dir / "PhaseIn_0.txt"
         if not src_file.exists():
             print(f"Error: Expected source file {src_file} not found after x86sim build.")
             return False
@@ -100,7 +129,7 @@ class Vitis_Helper:
             cwd = x86_sim_dir,
             check = True
         )
-        ouput_target = self.tc_path / mode / "output.txt"   
+        output_target = self.tc_path / mode / "output.txt"   
         x86_sim_output = x86_sim_dir / "x86simulator_output" / "data" / "Output_0.txt"
         if not x86_sim_output.exists():
             print(f"Error: Expected x86sim output file {x86_sim_output} not found after simulation.")
@@ -120,4 +149,4 @@ class Vitis_Helper:
             print("Report call did not return printable output, but builds may still have succeeded.")
 
         print("\nDone.")
-        print(f"Check outputs under: {workspace / component_name}")
+        print(f"Check outputs under: {self.workspace / component_name}")
