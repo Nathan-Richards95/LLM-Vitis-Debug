@@ -81,7 +81,7 @@ class Vitis_Helper:
         #aie_comp.import_files(from_loc=str(self.tc_path / mode), files=files_to_import)
 
         # optional config file
-        cfg_file = self.tc_path / "aiecompiler.cfg"
+        cfg_file = self.tc_path / "shared" / "aiecompiler.cfg"
         if cfg_file.exists():
             try:
                 aie_comp.remove_cfg_file("aiecompiler.cfg")
@@ -115,13 +115,14 @@ class Vitis_Helper:
         data_dir = x86_sim_dir / "data"
         data_dir.mkdir(parents=True, exist_ok=True)
         src_file = self.input_file
-        dst_file = data_dir / "PhaseIn_0.txt"
+        dst_file_x86 = data_dir / "PhaseIn_0.txt"
+        
         if not src_file.exists():
             print(f"Error: Expected source file {src_file} not found after x86sim build.")
             return False
 
-        shutil.copy(src_file, dst_file)
-        print(f"Copied x86sim input to: {dst_file}") if self.verbose else None
+        shutil.copy(src_file, dst_file_x86)
+        print(f"Copied x86sim input to: {dst_file_x86}") if self.verbose else None
 
         print("Running x86sim executable...") if self.verbose else None
         subprocess.run(
@@ -141,7 +142,17 @@ class Vitis_Helper:
         print("Building hardware...") if self.verbose else None
         aie_comp.build(target="hw")
         print("Hardware build complete.") if self.verbose else None
-
+        hw_build_dir = self.workspace / component_name / "build" / "hw"
+        data_dir = hw_build_dir / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        dst_file_hw = data_dir / "PhaseIn_0.txt"
+        shutil.copy(src_file, dst_file_hw)
+        print(f"Copied hardware build input to: {dst_file_hw}") if self.verbose else None
+        subprocess.run(
+            ["aiesimulator", "--profile"],
+            cwd = hw_build_dir,
+            check = True
+        )
         print("\nComponent Report:")
         try:
             print(aie_comp.get_report())
