@@ -1,3 +1,4 @@
+import os
 DEBUG_BASE_PROMPT = f"""You are fixing a broken C++ source file for AMD Vitis/AIE.
 
 Requirements:
@@ -28,7 +29,15 @@ FPGA_PART = "xc7z020clg400-1" #part used for synthesis and simulation
 TARGET_CLOCK = 100 #target clock frequency in MHz
 
 #Llama constants
-LLAMA_PATH = "/scratch/schekur2/models/llama3.3-70b-hls-trained/"
-LLAMA_MODEL_NAME = "llama"
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Model paths
+CODESTRAL_PATH = os.path.join(REPO_ROOT, "Collab_Models", "codestral-22b-aie-merged")
+QWEN_PATH = os.path.join(REPO_ROOT, "Collab_Models", "qwen2.5-32b-aie-merged")
+
+# Default model (change this to switch models)
+LLAMA_PATH = QWEN_PATH
+
+LLAMA_MODEL_NAME = "qwen"
 
 VALID_VITIS_MODES = ["ref", LLAMA_MODEL_NAME, LLAMA_MODEL_NAME.lower()]
