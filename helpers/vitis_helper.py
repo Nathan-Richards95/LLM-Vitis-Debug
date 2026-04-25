@@ -37,11 +37,14 @@ class Vitis_Helper:
             print("Vitis_Helper setup failed. Please check the error messages above.")
             sys.exit(1)
 
-    def setup(self):
+    def validate_mode(self):
         # check that the mode is valid
         if self.mode not in constants.VALID_VITIS_MODES:
             print(f"Invalid mode: {self.mode}. Valid modes are: {constants.VALID_VITIS_MODES}")
             return False
+        return True
+
+    def create_directories(self):
         # Create workspace and create a new folder if the model name does not
         # exist in the test case. Copy from the broken folder
         if not self.mode_dir.exists():
@@ -49,9 +52,8 @@ class Vitis_Helper:
             shutil.copytree(self.broken_dir, self.mode_dir, dirs_exist_ok=True)
         if not self.workspace_dir.exists():
             self.workspace_dir.mkdir(parents=True, exist_ok=True)
-        # Create the vitis client
-        self.client = vitis.create_client()
-        self.client.set_workspace(path=str(self.workspace_dir))
+
+    def create_component(self):
         # Set up component name and paths
         self.component_name = f"aie_{self.mode}"
         self.comp_dir = self.workspace_dir / self.component_name
@@ -83,35 +85,56 @@ class Vitis_Helper:
             for template_name, error in template_errors:
                 print(f"Template '{template_name}': {error}")
             return False
+        print(f'Created AI Engine component') if self.verbose else None
+        return True
+
+    def initialize_client(self):
+        # Create the vitis client
+        self.client = vitis.create_client()
+        self.client.set_workspace(path=str(self.workspace_dir))
+
+    def set_file_paths(self):
         # Set the relavent files paths
         self.host_file = self.mode_dir / "host.cpp"
         self.input_file = self.mode_dir / "input.txt"
         self.kernel_file = self.mode_dir / "kernel.cpp"
         self.graph_file = self.mode_dir / "graph.cpp"
         self.output_file = self.mode_dir / "output.txt"
-        print(f'Created AI Engine component') if self.verbose else None
-        # Import the source files into the component
+
+    def import_files(self):
+         # Import the source files into the component
         from_loc = str(self.tc_dir)
         files_to_import = [self.mode]
         self.aie_comp.import_files(from_loc=from_loc, files=files_to_import)
         print(f"Imported source tree pieces: {files_to_import}") if self.verbose else None
+
+    def configure_component(self):
         # Set the config file if it exists in the test case
         cfg_file = self.tc_dir / "shared" / "aiecompiler.cfg"
         if cfg_file.exists():
             try:
-                aie_comp.remove_cfg_file("aiecompiler.cfg")
+                self.aie_comp.remove_cfg_file("aiecompiler.cfg")
                 print("Removed tool-generated aiecompiler.cfg") if self.verbose else None
             except Exception:
                 print("No tool-generated aiecompiler.cfg removed (this is okay).") if self.verbose else None
 
-            aie_comp.add_cfg_file(str(cfg_file))
+            self.aie_comp.add_cfg_file(str(cfg_file))
             print(f"Added custom aiecompiler.cfg: {cfg_file}") if self.verbose else None
         else:
             print("No aiecompiler.cfg found; continuing without one.") if self.verbose else None
         # Set the top file as the graph
-        top_file = f'{mode}/graph.cpp'
-        aie_comp.update_top_level_file(top_file)
+        top_file = f'{self.mode}/graph.cpp'
+        self.aie_comp.update_top_level_file(top_file)
         print(f"Set top-level file to: {top_file}") if self.verbose else None
+
+    def setup(self):
+        if not self.validate_mode(): return False
+        self.create_directories()
+        self.initialize_client()
+        if not self.create_component(): return False
+        self.set_file_paths()
+        self.import_files()
+        self.configure_component()
         return True
 
     def build_component_x86(self):
@@ -119,11 +142,11 @@ class Vitis_Helper:
         print("\n Building x86sim...") if self.verbose else None
         try:
             print("Building x86sim...")
-            aie_comp.build(target="x86sim")
+            self.aie_comp.build(target="x86sim")
         except Exception as e:
             print(f"x86sim build failed: {e}")
             try:
-                print(aie_comp.get_report())
+                print(self.aie_comp.get_report())
             except Exception:
                 pass
             raise
@@ -158,7 +181,7 @@ class Vitis_Helper:
     def build_component_hw(self):
         print("Building hardware...") if self.verbose else None
         try:
-            aie_comp.build(target="hw")
+            self.aie_comp.build(target="hw")
         except Exception as e:
             print(f"Hardware build failed: {e}")
             raise
@@ -179,7 +202,7 @@ class Vitis_Helper:
         )
         print("\nComponent Report:")
         try:
-            print(aie_comp.get_report())
+            print(self.aie_comp.get_report())
         except Exception:
             print("Report call did not return printable output, but builds may still have succeeded.")
         print("\nDone.")

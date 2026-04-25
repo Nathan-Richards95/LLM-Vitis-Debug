@@ -1,5 +1,5 @@
 #include <adf.h>
-#include ""../shared/FirSingleStream.h""
+#include ""FirSingleStream.h""
 
 #define MULMAC(N) \
 		taps =  *coeff++; \

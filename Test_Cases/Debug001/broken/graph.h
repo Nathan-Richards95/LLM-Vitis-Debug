@@ -2,7 +2,7 @@
 
 #include <adf.h>
 #include <vector>
-#include "../shared/FirSingleStream.h"
+#include "FirSingleStream.h"
 
 using namespace adf;
 
@@ -42,7 +42,7 @@ public:
         connect<>(k.out[0], gmioOut.in[0]);
 
         source(k) = "broken.cpp";
-        headers(k) = {"../shared/FirSingleStream.h"};
+        headers(k) = {"FirSingleStream.h"};
         runtime<ratio>(k) = 0.9;
     }
 };

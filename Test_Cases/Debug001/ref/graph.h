@@ -2,7 +2,7 @@
 
 #include <adf.h>
 #include <vector>
-#include "../shared/FirSingleStream.h"
+#include "FirSingleStream.h"
 
 using namespace adf;
 
@@ -58,7 +58,7 @@ public:
         adf::connect<>(k.out[0], out.in[0]);
 
         adf::source(k)  = "ref.cpp";
-        adf::headers(k) = { "../shared/FirSingleStream.h" };
+        adf::headers(k) = { "FirSingleStream.h" };
         adf::runtime<ratio>(k) = 0.9;
     }
 };

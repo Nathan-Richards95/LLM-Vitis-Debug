@@ -1,6 +1,7 @@
 import json
 import constants
 from pathlib import Path
+import re
 
 def score_model(results_data_path: str):
     #Iterates through all of the results from the json file and calculates a score
@@ -105,7 +106,7 @@ def write_llm_output(tc_path, model_type, llm_response):
     Save the LLM's returned code into llm_out.cpp inside the testcase folder.
     """
     cleaned_code = extract_code(llm_response)
-    output_path = tc_path / model_type / "llm_out.cpp"
+    output_path = tc_path / model_type / "broken.cpp"
     output_path.write_text(cleaned_code, encoding="utf-8")
     return output_path
 
