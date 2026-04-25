@@ -1,0 +1,8 @@
+{
+  "id": "debug_001",
+  "top_function": "vec_add",
+  "language": "vitis_hls_cpp",
+  "bug_type": "missing_semicolon",
+  "requires_csim": true,
+  "requires_csynth": true
+}

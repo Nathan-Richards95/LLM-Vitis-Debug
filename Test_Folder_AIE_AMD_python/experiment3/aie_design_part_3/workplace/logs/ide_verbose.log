@@ -1,0 +1,171 @@
+2026-04-16 20:19:49 [debug] : Notification event posted from server - ON_DID_UPDATE_WORKSPACE. 
+2026-04-16 20:19:49 [debug] : --------------------------------------------------------------------------------- 
+2026-04-16 20:19:49 [debug] : /home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/workplace 
+2026-04-16 20:19:49 [debug] : --------------------------------------------------------------------------------- 
+2026-04-16 20:19:49 [debug] : [Logger] Previous user logs are stored in the file - /home/jgvincen/.Xilinx/Vitis/2024.1/logs/ide.log 
+2026-04-16 20:19:49 [debug] : [Logger] Previous debug logs are stored in the file - /home/jgvincen/.Xilinx/Vitis/2024.1/logs/ide_verbose.log 
+2026-04-16 20:19:49 [debug] : [Logger] All the internal problems will be logged at debug level. 
+2026-04-16 20:19:49 [debug] : RIGEL SERVER 2026-04-16 20:19:49,010 pool-2-thread-7 ERROR Unable to create file /home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/workplace/logs/vitis.log java.io.IOException: Could not create directory /home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/workplace/logs
+	at org.apache.logging.log4j.core.util.FileUtils.mkdir(FileUtils.java:120)
+	at org.apache.logging.log4j.core.util.FileUtils.makeParentDirs(FileUtils.java:137)
+	at org.apache.logging.log4j.core.appender.rolling.RollingFileManager$RollingFileManagerFactory.createManager(RollingFileManager.java:732)
+	at org.apache.logging.log4j.core.appender.rolling.RollingFileManager$RollingFileManagerFactory.createManager(RollingFileManager.java:716)
+	at org.apache.logging.log4j.core.appender.AbstractManager.getManager(AbstractManager.java:114)
+	at org.apache.logging.log4j.core.appender.OutputStreamManager.getManager(OutputStreamManager.java:100)
+	at org.apache.logging.log4j.core.appender.rolling.RollingFileManager.getFileManager(RollingFileManager.java:217)
+	at org.apache.logging.log4j.core.appender.RollingFileAppender$Builder.build(RollingFileAppender.java:146)
+	at com.xilinx.rigel.logger.LoggerSessionHelper.updateLogLocation(LoggerSessionHelper.java:102)
+	at com.xilinx.rigel.logger.LoggerSessionHelper.updateLogLocation(LoggerSessionHelper.java:64)
+	at com.xilinx.rigel.logger.LoggerEventHandler.handleEvent(LoggerEventHandler.java:34)
+	at com.xilinx.rigel.services.notification.Dispatcher.dispatch(Dispatcher.java:42)
+	at com.xilinx.rigel.services.notification.NotificationService.post(NotificationService.java:37)
+	at com.xilinx.rigel.common.workspace.WorkspaceManager.setWorkspaceLocation(WorkspaceManager.java:103)
+	at com.xilinx.rigel.common.workspace.WorkspaceManager.setWorkspaceLocation(WorkspaceManager.java:56)
+	at com.xilinx.rigel.services.workspace.WorkspaceService.setWorkspace(WorkspaceService.java:46)
+	at xilinx.rigel.workspace.v1.WorkspaceServiceGrpc$MethodHandlers.invoke(WorkspaceServiceGrpc.java:438)
+	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:331)
+	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:797)
+	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:123)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:829) 
+2026-04-16 20:19:49 [debug] : RIGEL SERVER 20:19:49 ERROR : Error in handling the notification ManagerFactory [org.apache.logging.log4j.core.appender.rolling.RollingFileManager$RollingFileManagerFactory@744502c6] unable to create manager for [/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/workplace/logs/vitis.log] with data [org.apache.logging.log4j.core.appender.rolling.RollingFileManager$FactoryData@349b09af[pattern=/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Test_Folder_AIE_AMD_python/experiment3/aie_design_part_3/workplace/logs/vitis.NaN.log, append=true, bufferedIO=true, bufferSize=8192, policy=SizeBasedTriggeringPolicy(size=10485760), strategy=DefaultRolloverStrategy(min=1, max=7, useMax=true), advertiseURI=null, layout=%d{HH:mm:ss} %-5level : %msg%n, filePermissions=null, fileOwner=null]] 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider]  updating the embedded templates on workspace event. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] refresh requested. 
+2026-04-16 20:19:49 [debug] : Received event from notification service: ON_DID_UPDATE_WORKSPACE. 
+2026-04-16 20:19:49 [debug] : [Logger Client] log levelchanged to  {"0":"Info"}
+2026-04-16 20:19:49 [debug] : [Logger UI]  Update Log Level  called 
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getEmbeddedExampleTemplateTree with connection:(object). {"0":"request:","1":{"wrappers_":null,"arrayIndexOffset_":-1,"array":[],"pivot_":1.7976931348623157e+308,"convertedPrimitiveFields_":{}}}
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] common calling method requested. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Repositories model update requested. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Repositories model update completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Templates model update requested. 
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getEmbeddedExampleTemplateTree from frontend. {"0":"request:"}
+2026-04-16 20:19:49 [debug] : [ProjectCache] fetching projects for project-cache 
+2026-04-16 20:19:49 [debug] : [Logger UI]  Update Log Level success {"0":{"success":true,"error":""}}
+2026-04-16 20:19:49 [debug] : [ProjectDecorator] tree decoration updated 
+2026-04-16 20:19:49 [debug] : [ProjectCache] Project location updated to undefined 
+2026-04-16 20:19:49 [debug] : [ProjectDecorator] tree decoration updated 
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:listAppRepos. {"0":"result:","1":[{"id":"vitis_examples","name":"Vitis Accel Examples Repository","description":"This repository contains examples to showcase various features of the Vitis tools and platforms. The examples illustrate specific scenarios related to host code and kernel programming through small working examples.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/vitis_examples","localDirectory":"/home/jgvincen/.Xilinx/Vitis/2024.1/vitis_examples","gitUrl":"https://github.com/Xilinx/Vitis_Accel_Examples.git","gitBranch":"2024.1","gitSubfoldersList":[],"type":2},{"id":"installed_examples","name":"Installed Examples Repository","description":"This repository contains some simple examples.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/installed_examples","localDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/samples","gitUrl":"","gitBranch":"","gitSubfoldersList":[],"type":2},{"id":"vitis_libraries","name":"Vitis Accelerated Libraries Repository","description":"The Vitis software development platform includes an extensive set of open-source, performance-optimized libraries that offer out-of-the-box acceleration with minimal to zero-code changes to your existing applications.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/vitis_libraries","localDirectory":"/home/jgvincen/.Xilinx/Vitis/2024.1/vitis_libraries","gitUrl":"https://github.com/Xilinx/Vitis_Libraries.git","gitBranch":"2024.1","gitSubfoldersList":["blas","codec","data_analytics","data_compression","data_mover","database","dsp","graph","hpc","motor_control","quantitative_finance","security","solver","sparse","ultrasound","utils","vision"],"type":1}]}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:listHlsExampleRepos. {"0":"result:","1":[{"id":"vitis_hls_examples","name":"Vitis HLS Introductory Examples","description":"Basic examples for Vitis HLS.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/vitis_hls_examples","localDirectory":"/home/jgvincen/.Xilinx/Vitis/2024.1/vitis_hls_examples","gitUrl":"https://github.com/Xilinx/Vitis-HLS-Introductory-Examples.git","gitBranch":"2024.1","gitSubfoldersList":[],"type":4},{"id":"vitis_libraries","name":"Vitis Accelerated Libraries Repository","description":"The Vitis software development platform includes an extensive set of open-source, performance-optimized libraries that offer out-of-the-box acceleration with minimal to zero-code changes to your existing applications.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/vitis_libraries","localDirectory":"/home/jgvincen/.Xilinx/Vitis/2024.1/vitis_libraries","gitUrl":"https://github.com/Xilinx/Vitis_Libraries.git","gitBranch":"2024.1","gitSubfoldersList":["blas","codec","data_analytics","data_compression","data_mover","database","dsp","graph","hpc","motor_control","quantitative_finance","security","solver","sparse","ultrasound","utils","vision"],"type":1}]}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:listAieExampleRepos. {"0":"result:","1":[{"id":"installed_aie_examples","name":"Installed AI Engine Examples","description":"This repository contains some simple AI Engine examples.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/installed_aie_examples","localDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/samples","gitUrl":"","gitBranch":"","gitSubfoldersList":[],"type":3},{"id":"vitis_libraries","name":"Vitis Accelerated Libraries Repository","description":"The Vitis software development platform includes an extensive set of open-source, performance-optimized libraries that offer out-of-the-box acceleration with minimal to zero-code changes to your existing applications.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/vitis_libraries","localDirectory":"/home/jgvincen/.Xilinx/Vitis/2024.1/vitis_libraries","gitUrl":"https://github.com/Xilinx/Vitis_Libraries.git","gitBranch":"2024.1","gitSubfoldersList":["blas","codec","data_analytics","data_compression","data_mover","database","dsp","graph","hpc","motor_control","quantitative_finance","security","solver","sparse","ultrasound","utils","vision"],"type":1}]}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:listAppRepos. {"0":"result:","1":[{"id":"vitis_examples","name":"Vitis Accel Examples Repository","description":"This repository contains examples to showcase various features of the Vitis tools and platforms. The examples illustrate specific scenarios related to host code and kernel programming through small working examples.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/vitis_examples","localDirectory":"/home/jgvincen/.Xilinx/Vitis/2024.1/vitis_examples","gitUrl":"https://github.com/Xilinx/Vitis_Accel_Examples.git","gitBranch":"2024.1","gitSubfoldersList":[],"type":2},{"id":"installed_examples","name":"Installed Examples Repository","description":"This repository contains some simple examples.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/installed_examples","localDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/samples","gitUrl":"","gitBranch":"","gitSubfoldersList":[],"type":2},{"id":"vitis_libraries","name":"Vitis Accelerated Libraries Repository","description":"The Vitis software development platform includes an extensive set of open-source, performance-optimized libraries that offer out-of-the-box acceleration with minimal to zero-code changes to your existing applications.","installDirectory":"/data/courses/class_cse494598cen571spring2026_aaror112/Vitis_2024_1/Vitis/2024.1/vitis_libraries","localDirectory":"/home/jgvincen/.Xilinx/Vitis/2024.1/vitis_libraries","gitUrl":"https://github.com/Xilinx/Vitis_Libraries.git","gitBranch":"2024.1","gitSubfoldersList":["blas","codec","data_analytics","data_compression","data_mover","database","dsp","graph","hpc","motor_control","quantitative_finance","security","solver","sparse","ultrasound","utils","vision"],"type":1}]}
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getAppRepoState from frontend. {"0":"request:","1":{"repoId":"vitis_libraries","repoType":1}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getAppRepoState with connection:(object). {"0":"request:","1":{"repoId":"vitis_libraries","repoType":1}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getAppRepoState with connection:(object). {"0":"request:","1":{"repoId":"vitis_hls_examples","repoType":4}}
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getAppRepoState from frontend. {"0":"request:","1":{"repoId":"vitis_hls_examples","repoType":4}}
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] installed_aie_examples:true 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] vitis_libraries:false 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Repositories model update completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Templates model update requested. 
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getAieExampleTemplateTree from frontend. {"0":"request:"}
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getAppRepoState from frontend. {"0":"request:","1":{"repoId":"vitis_examples","repoType":2}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getAieExampleTemplateTree with connection:(object). {"0":"request:","1":{"wrappers_":null,"arrayIndexOffset_":-1,"array":[],"pivot_":1.7976931348623157e+308,"convertedPrimitiveFields_":{}}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getAppRepoState with connection:(object). {"0":"request:","1":{"repoId":"vitis_examples","repoType":2}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:getAppRepoState. {"0":"result:","1":{"repoId":"","status":2}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:getAppRepoState. {"0":"result:","1":{"repoId":"","status":2}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getAppRepoState with connection:(object). {"0":"request:","1":{"repoId":"vitis_libraries","repoType":1}}
+2026-04-16 20:19:49 [debug] : [Application Examples Provider]  Application repository status:2 for id:vitis_examples 
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getAppRepoState from frontend. {"0":"request:","1":{"repoId":"vitis_libraries","repoType":1}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:getAppRepoState. {"0":"result:","1":{"repoId":"","status":2}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:getAppRepoState. {"0":"result:","1":{"repoId":"","status":2}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getAppRepoState with connection:(object). {"0":"request:","1":{"repoId":"vitis_libraries","repoType":1}}
+2026-04-16 20:19:49 [debug] : [Application Examples Provider]  Application repository status:2 for id:vitis_hls_examples 
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getAppRepoState from frontend. {"0":"request:","1":{"repoId":"vitis_libraries","repoType":1}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getAppTemplateTree with connection:(object). {"0":"request:","1":{"wrappers_":{},"arrayIndexOffset_":-1,"array":[],"pivot_":1.7976931348623157e+308,"convertedPrimitiveFields_":{}}}
+2026-04-16 20:19:49 [debug] : [Application Examples Provider]  Application repository status:2 for id:vitis_libraries 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] vitis_examples:false 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] installed_examples:true 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] vitis_libraries:false 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Repositories model update completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Templates model update requested. 
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getAppTemplateTree from frontend. {"0":"request:"}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executed method:getAppRepoState. {"0":"result:","1":{"repoId":"","status":2}}
+2026-04-16 20:19:49 [debug] : [Repository Server] Executing method:getHlsExampleTemplateTree with connection:(object). {"0":"request:","1":{"wrappers_":null,"arrayIndexOffset_":-1,"array":[],"pivot_":1.7976931348623157e+308,"convertedPrimitiveFields_":{}}}
+2026-04-16 20:19:49 [debug] : [Application Examples Provider]  Application repository status:2 for id:vitis_libraries 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] vitis_hls_examples:false 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] vitis_libraries:false 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Repositories model update completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Templates model update requested. 
+2026-04-16 20:19:49 [debug] : [Repository Service] Executing method:getHlsExampleTemplateTree from frontend. {"0":"request:"}
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Templates model update completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] common calling method completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] refresh completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Templates model update completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] common calling method completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] refresh completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] Templates model update completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] common calling method completed. 
+2026-04-16 20:19:49 [debug] : [Application Examples Provider] refresh completed. 
+2026-04-16 20:19:51 [debug] : Shutting down because of Close request. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/commands'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/keyboard'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/logger'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/messageService'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/startup-workspace'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/remote-filesystem'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/envs'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/workspace'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/stopwatch'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/application'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/i18n'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hostedPlugin'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/project'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/rigel-workspace'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/component'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/debugger'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/debug'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/shell-terminal'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/task'. 
+2026-04-16 20:19:51 [debug] : a client has disconnected - removed from list: 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/quickPick'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/plugin-ext'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/plugin-paths'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/search'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/vsx-environment'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/request-service'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/server'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/feature-registry'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/repository'. 
+2026-04-16 20:19:51 [debug] : [Repository Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/rigel-utils'. 
+2026-04-16 20:19:51 [debug] : [Rigel Utils Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/program_flash'. 
+2026-04-16 20:19:51 [debug] : [Program Flash Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/build'. 
+2026-04-16 20:19:51 [debug] : [Build Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path 'services/rigel-backend-helper'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/aie'. 
+2026-04-16 20:19:51 [debug] : [AIE Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/analysis'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/notification'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/recent-summaries'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/platform'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls/l1library/service'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/elf-reader'. 
+2026-04-16 20:19:51 [debug] : [Elf Reader Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/rigel_explorer'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/linker-script'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/rigel-logger'. 
+2026-04-16 20:19:51 [debug] : [Logger Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/vitis-hls'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/device'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/vcxx'. 
+2026-04-16 20:19:51 [debug] : [Rigel Vcxx Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls/common/file/service'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/flow_navigator'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls/common/data/info'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls/dataflow/info'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls/directive'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls_flow'. 
+2026-04-16 20:19:51 [debug] : [Hls Flow Server] Disposing objects in backend. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/mini-browser-service'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/project-utils'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/bootgen'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls/report'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/hls/wave/open'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/search-in-workspace'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/report-model'. 
+2026-04-16 20:19:51 [debug] : Closing channel on service path '/services/keytar'. 

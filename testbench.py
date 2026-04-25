@@ -1,164 +1,207 @@
+# standard library imports
 from sys import argv
-
-from transformers import pipeline
-import constants
 import json
 from pathlib import Path
-#import Models.Model
-#from Models.Llama import Llama
-import platform
 import subprocess
+import os
+import platform
+import re
+from datetime import datetime
 
-TEST_CASES_DIR = Path("Test_Cases")
+# our file imports
+import constants
+import Models.Model
+from Models.Model import GenerationConfig
+from Models.Llama import Llama
+from datetime import datetime
+from helpers import general_helper
+from helpers import vitis_helper
 
-def get_testCases():
-    testCase = []
-    
-    for item in TEST_CASES_DIR.iterdir():
-        #print (TEST_CASES_DIR.iterdir())
-        if item.is_dir():
-            testCase.append(item)
-
-    return testCase
-    
-def load_testCases(tc_path):
-    broken_path = tc_path / "broken.cpp"
-    meta_path = tc_path / "meta.json"
-    tb_path = tc_path / "debug_tb.cpp"
-    ref_path = tc_path / "ref.cpp"
-
-    testcase_data = {
-        "name": tc_path.name,
-        "broken_code": "",
-        "meta": {},
-        "tb_code": "",
-        "ref_code": ""
-    }
-    if broken_path.exists():
-        testcase_data["broken_code"] = broken_path.read_text(encoding="utf-8")
-
-    if meta_path.exists():
-        with open(meta_path, "r", encoding="utf-8") as f:
-            testcase_data["meta"] = json.load(f)
-
-    if tb_path.exists():
-        testcase_data["tb_code"] = tb_path.read_text(encoding="utf-8")
-
-    if ref_path.exists():
-        testcase_data["ref_code"] = ref_path.read_text(encoding="utf-8")
-
-    return testcase_data
-
-def extract_code(llm_response):
-    """
-    Removes markdown code fences if the LLM returns:
-    ```cpp
-    ...
-    ```
-    """
-    text = llm_response.strip()
-
-    if text.startswith("```"):
-        parts = text.split("```")
-        if len(parts) >= 3:
-            return parts[1].replace("cpp", "", 1).strip()
-
-    return text
-
-
-def write_llm_output(tc_path, llm_response):
-    """
-    Save the LLM's returned code into llm_out.cpp inside the testcase folder.
-    """
-    cleaned_code = extract_code(llm_response)
-    output_path = tc_path / "llm_out.cpp"
-    output_path.write_text(cleaned_code, encoding="utf-8")
-    return output_path
-
-def run_vitis_case(tc_path, meta, llm_out_path):
-    proj_dir = Path("runs") / tc_path.name / "hls_proj"
-    proj_dir.parent.mkdir(parents=True, exist_ok=True)
-
-    top = meta.get("top_function", "")
-    part = meta.get("part", "xc7z020clg400-1")
-    clock = str(meta.get("clock_period", 10.0))
-
-    cmd = [
-        "vitis_hls",
-        "-f", "run_hls.tcl",
-        f"proj_dir={proj_dir}",
-        f"src={llm_out_path}",
-        f"tb={tc_path / 'debug_tb.cpp'}",
-        f"top={top}",
-        f"part={part}",
-        f"clock={clock}",
-    ]
-
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    (proj_dir.parent / "vitis_stdout.txt").write_text(result.stdout)
-    (proj_dir.parent / "vitis_stderr.txt").write_text(result.stderr)
-
-    return result
-
-if __name__ == '__main__':
-    #1. iterate through each test case in the test cases directory
-    #2. grab the broken code and send it to the LLM
-    testcases = get_testCases()        
-    model_type = argv[1] if len(argv) > 1 else "gpt5"
-    model = None
-    match model_type:
-        case "llama":
-            config = Models.Model.GenerationConfig(
-                model_name=constants.LLAMA_MODEL,
-                temperature=0.7,
-                max_tokens=2048,
-                top_p=1.0
-            )
-            model = Llama(config=config)
-        case "gpt5":
-            pass  # Handle GPT-5 case
-    if model is None:
-        print(f"Unsupported model type: {model_type}")
+def initialize_model(model_type):
+    try:
+        model = None
+        try:
+            if model_type == "llama":
+                config = GenerationConfig(
+                            model_name=constants.LLAMA_MODEL_NAME,
+                            temperature=0.2,
+                            max_tokens=2048,
+                            top_p=1.0
+                        )
+                model = Llama(config=config)
+        except Exception as e:
+            print(f"An error occurred while initializing the model: {e}")
+            exit(1)
+        #case for if the model is not implemented
+        if model is None:
+            print(f"Unsupported model type: {model_type}")
+            exit(1)
+        return model
+    except Exception as e:
+        print(f"An error occurred while initializing the model: {e}")
         exit(1)
-    testcases = get_testCases()
-    for tc in testcases:
-        data = load_testCases(tc)
-        code = f"===BEGIN BROKEN CODE===\n{code}\n===END BROKEN CODE==="
-        output = model.generate_from_text(code, system_prompt=constants.BASE_PROMPT)
+
+def initialize_results_file(model_type):
+    try:
+        #create a json file to store the results, with a timestamp in the name
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        results_path = Path("Results") / f"{model_type}_results_{timestamp}.json"
+        if not results_path.exists():
+            with open(results_path, "w", encoding="utf-8") as f:
+                json.dump(constants.GET_BASE_RESULTS_FORMAT(), f)  # initialize with the blank structure
+        return results_path, timestamp
+    except Exception as e:
+        print(f"An error occurred while initializing the results file: {e}")
+        exit(1)
+
+def generate_message(tc, model_type, model):
+    try:
+        #1. iterate through each test case in the test cases directory
+        #2. grab the broken code and send it to the LLM
+        print(f"Processing test case: {tc.name}")
+        data = general_helper.load_testCases(tc, model_type)
+        code = data["broken_code"]
+        messages = [
+            {"role": "system", "content": constants.DEBUG_BASE_PROMPT},
+            {"role": "user", "content": f"{code}"}
+        ]
+        #TODO: Check if the code if fully generated, and if the full code is not there,
+        #then keep sending it back in until we get a full response or 
+        #we hit a max number of retries.
+        #TODO: Also, try to strip any non code from the response
+        #TODO: Make sure to keep track if the LLM required trimming and the number of retries it needed
+        output = model.generate(messages=messages)
+        print(f"LLM output for test case {data['name']}:\n{output.text}\n")
+        return data, output
+    except Exception as e:
+        print(f"An error occurred while generating the message: {e}")
+        exit(1)
+
+def validate_output(output, data):
+    try:
         #3. grab the output from the LLM
         #4. check the following from the output:
         #   - is the output empty
-        #   - is the response just code
+        #   - is the response just code (are comments ok?)
         #   - does the top level function still exist
         #   - required includes still exist
-        #5. Attempt to run the tcl file to see if it synthesizes and simulates without error
-        #6. Grab the output json and record the following:
-        #   - csim success
-        #   - csynth success
-        #   - correctness pass
-        #   - compiler errors
-        #   - compiler warnings
-        #   - synthesis errors
-        #   - synthesis warnings
-        #   - runtime metrics (clock frequency, resource usage, etc.)
-        #7. Write the output json to a file. Store using the following schema:
-        # {
-        #     "run_id": "modelA_debug_001",
-        #     "model": "modelA",
-        #     "benchmark_id": "debug_001",
-        #     "bug_type": "missing_semicolon",
-        #     "parseable_output": true,
-        #     "top_function_present": true,
-        #     "csim_success": true,
-        #     "correctness_pass": true,
-        #     "csynth_success": true,
-        #     "compiler_errors": [],
-        #     "compiler_warnings": [],
-        #     "synthesis_errors": [],
-        #     "synthesis_warnings": [],
-        #     "final_status": "success"
-        # }
+        parseable_output = True
+        error = []
+        empty = False
+        if output.text.strip() == "":
+            parseable_output = False
+            error.append("LLM returned an empty response.")
+            empty = True
+            print(f"Error for test case {data['name']}: {error}")
+        print(f'{data["name"]} is not empty') if not empty else print(f'{data["name"]} is empty')
+        
+        has_top = True
+        if general_helper.has_top_level_cpp_function(output.text, data['meta']['top_function']) == False:
+            print(f"Top level function is missing in the output for test case {data['name']}.")
+            error.append("Missing top level function.")
+            parseable_output = False
+            has_top = False
+        print(f'{data["name"]} has top level function {data["meta"]["top_function"]}') if has_top else print(f'{data["name"]} is missing top level function {data["meta"]["top_function"]}')
+        return error, parseable_output, has_top 
+    except Exception as e:
+        print(f"An error occurred while validating the output: {e}")
+        return ["Error validating output."], False, False
 
-       
+def build_ref(tc, data):
+    try:
+        #5. Attempt to build in x86 and hw for ref
+        # check if the hw build report is already in the test case folder. If it is, skip the build step and just read the report.
+        report_path = Path(f"Test_Cases/{tc.name}/workspace/aie_ref/build/hw/Work/reports/complexity.csv")
+        if report_path.exists():
+            print(f"HW build report already exists for test case {data['name']}. Skipping build step.")
+        else:
+            print(f'Building reference implementation for test case {data["name"]}...')
+            ref_vitis = vitis_helper.Vitis_Helper(
+                tc_name = tc.name,
+                mode = "ref"
+            )
+            ref_vitis.run_full_pipeline()
+    except Exception as e:
+        print(f"An error occurred while building the reference implementation: {e}")
+
+def build_model(tc, model_type, data):
+    try:
+        #5. Attempt to build in x86 and hw for the model
+        print(f'Building LLM output for test case {data["name"]}...')
+        model_vitis = vitis_helper.Vitis_Helper(
+            tc_name = tc.name,
+            mode = model_type
+        )
+        model_vitis.run_full_pipeline()
+    except Exception as e:
+        print(f"An error occurred while building the model: {e}")
+
+def compare_outputs(tc, model_type, data):
+    try:
+        #6. Grab the ref output and the llm output and compare them for correctness. Will only check for correctness and not for performance for now
+        ref_output_path = Path(f"Test_Cases/{tc.name}/ref/output.txt")
+        llm_output_path = Path(f"Test_Cases/{tc.name}/{model_type}/output.txt")
+        llm_output_correct = False
+        if ref_output_path.exists() and llm_output_path.exists():
+            # Compare the outputs for correctness
+            with open(ref_output_path, "r", encoding="utf-8") as f:
+                ref_output = f.read().strip()
+            with open(llm_output_path, "r", encoding="utf-8") as f:
+                llm_output = f.read().strip()
+            llm_output_correct = (ref_output == llm_output)
+            print(f"LLM output correctness for test case {data['name']}: {llm_output_correct}")
+        else:
+            if not ref_output_path.exists():
+                print(f"Reference output file not found for test case {data['name']}. Expected at: {ref_output_path}")
+            if not llm_output_path.exists():
+                print(f"LLM output file not found for test case {data['name']}. Expected at: {llm_output_path}")
+        return llm_output_correct
+    except Exception as e:
+        print(f"An error occurred while comparing the outputs: {e}")
+        return False
+
+def write_results(model_type, timestamp, data, error, has_top, llm_output_correct, parseable_output, results_path):
+    try:
+        #open a json file in the results folder and append the results for this test case
+        results_data = {
+            "run_id": f"{model_type}_{data['name']}_{timestamp}",
+            "model": model_type,
+            "benchmark_id": data['name'],
+            "bug_type": data['meta']['bug_type'],
+            "parseable_output": parseable_output,
+            "error_types": error,
+            "top_function_present": has_top,
+            "correctness_pass": llm_output_correct,
+            "difficulty": data['meta']['difficulty']
+        }
+        with open(results_path, "r+", encoding="utf-8") as f:
+            existing_data = json.load(f)
+            existing_data["test_results"].append(results_data)
+            f.seek(0)
+            json.dump(existing_data, f, indent=4)
+    except Exception as e:
+        print(f"An error occurred while writing the results: {e}")
+
+def main():
+
+    testcases = general_helper.get_testCases()
+    model_type = argv[1] if len(argv) > 1 else "llama"
+    model = initialize_model(model_type)
+    results_path, timestamp = initialize_results_file(model_type)
+    for tc in testcases:
+        try:
+            data, output = generate_message(tc, model_type, model)
+            errors, parseable_output, has_top = validate_output(output, data)
+            general_helper.write_llm_output(tc, model_type, output.text)
+            build_ref(tc, data)
+            build_model(tc, model_type, data)
+            llm_output_correct = compare_outputs(tc, model_type, data)
+            write_results(model_type, timestamp, data, errors, has_top, llm_output_correct, parseable_output, results_path)
+        except Exception as e:
+            print(f"An error occurred while processing test case {tc.name}: {e}")
+            continue
+    general_helper.score_model(results_path)
+
+if __name__ == "__main__":
+    main()       
 
