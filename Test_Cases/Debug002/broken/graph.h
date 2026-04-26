@@ -4,38 +4,57 @@
 
 using namespace adf;
 
-// Kernel declaration matching broken.cc
+// Kernel declaration
 void mm3_kernel0_L3_B0_A0_C3(
     input_window_int8* __restrict matA,
     output_stream_acc48* __restrict matC
 );
 
+// Graph definition
 class MM3Graph : public adf::graph {
-public:
-    adf::input_gmio  inA;
-    adf::output_gmio outC;
-
+private:
     adf::kernel k;
 
+public:
+    adf::input_plio inA;
+    adf::output_plio outC;
+
     MM3Graph() {
+        // Create kernel
         k = adf::kernel::create(mm3_kernel0_L3_B0_A0_C3);
 
-        inA  = adf::input_gmio::create("inA", 64, 1000);
-        outC = adf::output_gmio::create("outC", 64, 1000);
+        // Input and output PLIOs
+        inA = adf::input_plio::create(
+            "inA",
+            adf::plio_32_bits,
+            "input.txt"
+        );
 
-        // IMPORTANT:
-        // Replace WINDOW_BYTES with the real input window size in BYTES.
-        adf::connect< adf::window<WINDOW_BYTES> >(inA.out[0], k.in[0]);
-        adf::connect<>(k.out[0], outC.in[0]);
+        outC = adf::output_plio::create(
+            "outC",
+            adf::plio_32_bits,
+            "output.txt"
+        );
 
-        adf::source(k) = "broken.cc";
+        // Connect input → kernel
+        adf::connect<> net_in(inA.out[0], k.in[0]);
+
+        // Connect kernel → output
+        adf::connect<> net_out(k.out[0], outC.in[0]);
+
+        // Kernel source
+        adf::source(k) = "broken.cpp";
+
+        // Required headers for compile
         adf::headers(k) = {
-            "../shared/para_L3.h",
-            "../shared/parameter_L3_B0_A0_C3.h"
+            "para_L3.h",
+            "parameter_L3_B0_A0_C3.h"
         };
 
+        // Runtime estimate
         adf::runtime<ratio>(k) = 0.9;
     }
 };
 
+// Global graph object
 extern MM3Graph G;

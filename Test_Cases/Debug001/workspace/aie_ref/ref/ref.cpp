@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
  #include <adf.h>
 
-#include "FirSingleStream.h"
+#include "../shared/FirSingleStream.h"
 //#include "../system_settings.h"
 
 

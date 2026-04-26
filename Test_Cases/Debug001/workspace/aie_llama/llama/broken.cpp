@@ -1,14 +1,5 @@
-/*
-Copyright (C) 2023, Advanced Micro Devices, Inc. All rights reserved.
-SPDX-License-Identifier: MIT
-*/
-
-
- #include <adf.h>
-
+#include <adf.h>
 #include "FirSingleStream.h"
-//#include "../system_settings.h"
-
 
 #define MULMAC(N) \
 		taps =  *coeff++; \
@@ -25,10 +16,8 @@ SPDX-License-Identifier: MIT
 		acc = mac4(acc,data,N+6,0x3210,1,taps,6,0x0000,1)
 
 
-
-
 template <int NSamples,int ShiftAcc>
-void SingleStream::FIR_SingleStream<NSamples,ShiftAcc>::filter(input_stream_cint16* sin,output_stream_cint16* sout)
+void SingleStream::FIR_SingleStream<NSamples,ShiftAcc>::filter(input_stream_cint16* sin, output_stream_cint16* sout)
 {
 	v8cint16 *coeff =  (v8cint16*) weights;
 	v8cint16 taps = undef_v8cint16();
@@ -36,8 +25,6 @@ void SingleStream::FIR_SingleStream<NSamples,ShiftAcc>::filter(input_stream_cint
 	v32cint16 data = *ptr_delay_line;
 
 	v4cacc48 acc = undef_v4cacc48();
-
-
 
 // Computes 32 samples per iteration
 	for(int i=0;i<NSamples/32;i++)
@@ -108,7 +95,6 @@ void SingleStream::FIR_SingleStream<NSamples,ShiftAcc>::filter(input_stream_cint
 		MACMAC(21);
 		writeincr_v4(sout,srs(acc,ShiftAcc));
 		coeff -= 4;
-
 	}
 
 	*ptr_delay_line = data;

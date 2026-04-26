@@ -41,3 +41,14 @@ LLAMA_PATH = QWEN_PATH
 LLAMA_MODEL_NAME = "qwen"
 
 VALID_VITIS_MODES = ["ref", LLAMA_MODEL_NAME, LLAMA_MODEL_NAME.lower()]
+
+#scoring stuff
+EASY_MULTIPLIER = 1
+MEDIUM_MULTIPLIER = 2
+HARD_MULTIPLIER = 3
+
+def GET_BASE_RESULTS_FORMAT():
+    return {
+        "score": {},
+        "test_results": []
+    }
