@@ -18,7 +18,19 @@ TARGET_CLOCK = 100 #target clock frequency in MHz
 LLAMA_PATH = "/scratch/schekur2/models/llama3.3-70b-hls-trained/"
 LLAMA_MODEL_NAME = "llama"
 
-VALID_VITIS_MODES = ["ref", LLAMA_MODEL_NAME, LLAMA_MODEL_NAME.lower()]
+#GPT OSS 120b constants
+GPT_OSS_120b_PATH = "/scratch/nrricha2/Versal_Project/Models/GPT_OSS_120b"
+VALID_GPT_OSS_120b_INPUTS = ["gpt_oss_120b_raw", "120r"]
+GPT_OSS_120b_MODEL_NAME = "GPT-OSS-120b-raw"
+
+VALID_VITIS_MODES = [
+    "ref", 
+    LLAMA_MODEL_NAME,
+    LLAMA_MODEL_NAME.lower(),
+    GPT_OSS_120b_MODEL_NAME, 
+    GPT_OSS_120b_MODEL_NAME.lower()
+]
+
 
 #scoring stuff
 EASY_MULTIPLIER = 1

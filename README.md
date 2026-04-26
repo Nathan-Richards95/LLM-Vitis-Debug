@@ -5,6 +5,8 @@ Steps to launch vitis python script:
 
 Testbench in general
 1. pip install -U transformers kernels torch
+2. pip install -U huggingface_hub hf_transfer
+3. pip install sentencepiece tiktoken
 
 Vitis_Helper
 1. pip install "protobuf==3.20*"

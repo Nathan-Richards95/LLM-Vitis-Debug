@@ -16,6 +16,7 @@ from Models.Llama import Llama
 from datetime import datetime
 from helpers import general_helper
 from helpers import vitis_helper
+from Models.GPT_OSS_120b_raw import GPT_OSS_120b_raw
 
 def initialize_model(model_type):
     try:
@@ -29,6 +30,14 @@ def initialize_model(model_type):
                             top_p=1.0
                         )
                 model = Llama(config=config)
+            elif model_type in constants.VALID_GPT_OSS_120b_INPUTS:
+                config = GenerationConfig(
+                            model_name=constants.GPT_OSS_120b_MODEL_NAME,
+                            temperature=0.2,
+                            max_tokens=2048,
+                            top_p=1.0
+                        )
+                model = GPT_OSS_120b_raw(config=config)
         except Exception as e:
             print(f"An error occurred while initializing the model: {e}")
             exit(1)
@@ -130,7 +139,7 @@ def build_model(tc, model_type, data):
         print(f'Building LLM output for test case {data["name"]}...')
         model_vitis = vitis_helper.Vitis_Helper(
             tc_name = tc.name,
-            mode = model_type
+            mode = model.model_name
         )
         model_vitis.run_full_pipeline()
     except Exception as e:
@@ -189,17 +198,13 @@ def main():
     model = initialize_model(model_type)
     results_path, timestamp = initialize_results_file(model_type)
     for tc in testcases:
-        try:
-            data, output = generate_message(tc, model_type, model)
-            errors, parseable_output, has_top = validate_output(output, data)
-            general_helper.write_llm_output(tc, model_type, output.text)
-            build_ref(tc, data)
-            build_model(tc, model_type, data)
-            llm_output_correct = compare_outputs(tc, model_type, data)
-            write_results(model_type, timestamp, data, errors, has_top, llm_output_correct, parseable_output, results_path)
-        except Exception as e:
-            print(f"An error occurred while processing test case {tc.name}: {e}")
-            continue
+        data, output = generate_message(tc, model_type, model)
+        errors, parseable_output, has_top = validate_output(output, data)
+        general_helper.write_llm_output(tc, model_type, output.text)
+        build_ref(tc, data)
+        build_model(tc, model_type, data)
+        llm_output_correct = compare_outputs(tc, model_type, data)
+        write_results(model_type, timestamp, data, errors, has_top, llm_output_correct, parseable_output, results_path)
     general_helper.score_model(results_path)
 
 if __name__ == "__main__":

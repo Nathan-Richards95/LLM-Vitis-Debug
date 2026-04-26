@@ -30,6 +30,7 @@ class LLMResponse:
 class BaseLLM(ABC):
     def __init__(self, config: GenerationConfig):
         self.config = config
+        self.model_name = config.model_name
 
     @abstractmethod
     def generate(self, messages: List[Message]) -> LLMResponse:

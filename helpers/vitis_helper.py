@@ -47,9 +47,10 @@ class Vitis_Helper:
     def create_directories(self):
         # Create workspace and create a new folder if the model name does not
         # exist in the test case. Copy from the broken folder
+        print(f"Creating model directory: {self.mode_dir} and copying from broken directory: {self.broken_dir}")
         if not self.mode_dir.exists():
-            self.mode_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(self.broken_dir, self.mode_dir, dirs_exist_ok=True)
+            shutil.copytree(self.broken_dir, self.mode_dir)
+
         if not self.workspace_dir.exists():
             self.workspace_dir.mkdir(parents=True, exist_ok=True)
 
