@@ -42,7 +42,7 @@ template <typename TT_DATA,
           unsigned int TP_ASCENDING>
 INLINE_DECL void kernelClass<TT_DATA, TP_IN_API, TP_OUT_API, TP_DIM, TP_ASCENDING>::mergeSortSelectArch(
     T_inputIF<TT_DATA> inInterface, T_outputIF<TT_DATA> outInterface) {
-    if constexpr(TP_IN_API == kWindowAPI) { mergeSortBufferIn(inInterface, outInterface); }
+    if constexpr (TP_IN_API == kWindowAPI) { mergeSortBufferIn(inInterface, outInterface); }
     else {
         mergeSortStreamIn(inInterface, outInterface);
     }
@@ -60,7 +60,7 @@ INLINE_DECL void kernelClass<TT_DATA, TP_IN_API, TP_OUT_API, TP_DIM, TP_ASCENDIN
 
     dataVectStream_t v_A, v_B, v_Out;
     v_A = readincr_v<kSamplesInVec>(inInterface.inStream0);
-    if constexpr(TP_IN_API == kStreamCascAPI) { v_B = readincr_v<kSamplesInVec>(inInterface.inCascade); }
+    if constexpr (TP_IN_API == kStreamCascAPI) { v_B = readincr_v<kSamplesInVec>(inInterface.inCascade); }
     else {
         v_B = readincr_v<kSamplesInVec>(inInterface.inStream1);
     }
@@ -90,7 +90,7 @@ INLINE_DECL void kernelClass<TT_DATA, TP_IN_API, TP_OUT_API, TP_DIM, TP_ASCENDIN
                     bIdx = 0;
                     if (bLoadCount < (kVecInFrame / 2)) {
                         bLoadCount++;
-                        if constexpr(TP_IN_API == kStreamCascAPI) {
+                        if constexpr (TP_IN_API == kStreamCascAPI) {
                             v_B = readincr_v<kSamplesInVec>(inInterface.inCascade);
                         }
                         else {
@@ -102,4 +102,162 @@ INLINE_DECL void kernelClass<TT_DATA, TP_IN_API, TP_OUT_API, TP_DIM, TP_ASCENDIN
                 }
             }
         }
-        if constexpr(TP_OUT_API == kCascAPI) { write
+        if constexpr (TP_OUT_API == kCascAPI) { writeincr(outInterface.outCascade, v_Out); }
+        else {
+            writeincr(outInterface.outStream, v_Out);
+        }
+    }
+};
+template <typename TT_DATA,
+          unsigned int TP_IN_API,
+          unsigned int TP_OUT_API,
+          unsigned int TP_DIM,
+          unsigned int TP_ASCENDING>
+INLINE_DECL void kernelClass<TT_DATA, TP_IN_API, TP_OUT_API, TP_DIM, TP_ASCENDING>::mergeSortBufferIn(
+    T_inputIF<TT_DATA> inInterface, T_outputIF<TT_DATA> outInterface) {
+    using dataVectStream_t = aie::vector<TT_DATA, kSamplesInVec>;
+    using dataVectWindow_t = aie::vector<TT_DATA, kSamplesInWindowVec>;
+    TT_DATA aVal, bVal, d_Out;
+
+    dataVectStream_t v_Out;
+
+    dataVectWindow_t v_A, v_B;
+    dataVectWindow_t* inPtrA = (dataVectWindow_t*)inInterface.inWindow0;
+    dataVectWindow_t* inPtrB = (dataVectWindow_t*)inInterface.inWindow1;
+    v_A = *inPtrA++;
+    v_B = *inPtrB++;
+
+    unsigned int aIdx = 0;
+    unsigned int bIdx = 0;
+    unsigned int aLoadCount = 1;
+    unsigned int bLoadCount = 1;
+    for (int i = 0; i < (kVecInFrame); i++) chess_prepare_for_pipelining chess_loop_count(kVecInFrame) {
+#pragma unroll(kSamplesInVec)
+            for (int j = 0; j < kSamplesInVec; j++) {
+                if ((v_A[aIdx] <= v_B[bIdx]) == TP_ASCENDING) {
+                    v_Out[j] = v_A[aIdx++];
+                    // load new A when ready
+                    if (aIdx == kSamplesInWindowVec) {
+                        aIdx = 0;
+                        if (aLoadCount < kVecInWindow) {
+                            aLoadCount++;
+                            v_A = *inPtrA++;
+                        } else {
+                            v_A = ::aie::broadcast<TT_DATA, kSamplesInWindowVec>(sortLimit);
+                        }
+                    }
+                } else {
+                    v_Out[j] = v_B[bIdx++];
+                    // load new B when ready
+                    if (bIdx == kSamplesInWindowVec) {
+                        bIdx = 0;
+                        if (bLoadCount < kVecInWindow) {
+                            bLoadCount++;
+                            v_B = *inPtrB++;
+                        } else {
+                            v_B = ::aie::broadcast<TT_DATA, kSamplesInWindowVec>(sortLimit);
+                        }
+                    }
+                }
+            }
+            if constexpr (TP_OUT_API == kCascAPI) { writeincr(outInterface.outCascade, v_Out); }
+            else {
+                writeincr(outInterface.outStream, v_Out);
+            }
+        }
+};
+//////////////////////////////////////////////////// dual stream in, stream out ////////////////////////////////////////
+template <typename TT_DATA,
+          unsigned int TP_IN_API,
+          unsigned int TP_OUT_API,
+          unsigned int TP_DIM,
+          unsigned int TP_ASCENDING>
+NOINLINE_DECL void merge_sort<TT_DATA, TP_IN_API, TP_OUT_API, TP_DIM, TP_ASCENDING>::bitonic_merge_main(
+    input_stream<TT_DATA>* __restrict inStream0,
+    input_stream<TT_DATA>* __restrict inStream1,
+    output_stream<TT_DATA>* __restrict outStream) {
+    T_inputIF<TT_DATA> inInterface;
+    T_outputIF<TT_DATA> outInterface;
+
+    inInterface.inStream0 = inStream0;
+    inInterface.inStream1 = inStream1;
+    outInterface.outStream = outStream;
+
+    this->mergeSortKernel(inInterface, outInterface);
+};
+template <typename TT_DATA,
+          //   unsigned int TP_IN_API,
+          //   unsigned int TP_OUT_API,
+          unsigned int TP_DIM,
+          unsigned int TP_ASCENDING>
+NOINLINE_DECL void merge_sort<TT_DATA, kStreamCascAPI, kStreamAPI, TP_DIM, TP_ASCENDING>::bitonic_merge_main(
+    input_stream<TT_DATA>* __restrict inStream0,
+    input_cascade<TT_DATA>* __restrict inCascade,
+    output_stream<TT_DATA>* __restrict outStream) {
+    T_inputIF<TT_DATA> inInterface;
+    T_outputIF<TT_DATA> outInterface;
+
+    inInterface.inStream0 = inStream0;
+    inInterface.inCascade = inCascade;
+    outInterface.outStream = outStream;
+    this->mergeSortKernel(inInterface, outInterface);
+};
+template <typename TT_DATA,
+          //   unsigned int TP_IN_API,
+          //   unsigned int TP_OUT_API,
+          unsigned int TP_DIM,
+          unsigned int TP_ASCENDING>
+NOINLINE_DECL void merge_sort<TT_DATA, kStreamCascAPI, kCascAPI, TP_DIM, TP_ASCENDING>::bitonic_merge_main(
+    input_stream<TT_DATA>* __restrict inStream0,
+    input_cascade<TT_DATA>* __restrict inCascade,
+    output_cascade<TT_DATA>* __restrict outCascade) {
+    T_inputIF<TT_DATA> inInterface;
+    T_outputIF<TT_DATA> outInterface;
+
+    inInterface.inStream0 = inStream0;
+    inInterface.inCascade = inCascade;
+    outInterface.outCascade = outCascade;
+    this->mergeSortKernel(inInterface, outInterface);
+};
+/////////////////////////////////////////////////////// iobuffer in ////////////////////////////////////////////////////
+template <typename TT_DATA,
+          //   unsigned int TP_IN_API,
+          //   unsigned int TP_OUT_API,
+          unsigned int TP_DIM,
+          unsigned int TP_ASCENDING>
+NOINLINE_DECL void merge_sort<TT_DATA, kWindowAPI, kStreamAPI, TP_DIM, TP_ASCENDING>::bitonic_merge_main(
+    input_buffer<TT_DATA>& __restrict inWindow0,
+    input_buffer<TT_DATA>& __restrict inWindow1,
+    output_stream<TT_DATA>* __restrict outStream) {
+    T_inputIF<TT_DATA> inInterface;
+    T_outputIF<TT_DATA> outInterface;
+
+    inInterface.inWindow0 = inWindow0.data();
+    inInterface.inWindow1 = inWindow1.data();
+    outInterface.outStream = outStream;
+
+    this->mergeSortKernel(inInterface, outInterface);
+};
+template <typename TT_DATA,
+          //   unsigned int TP_IN_API,
+          //   unsigned int TP_OUT_API,
+          unsigned int TP_DIM,
+          unsigned int TP_ASCENDING>
+NOINLINE_DECL void merge_sort<TT_DATA, kWindowAPI, kCascAPI, TP_DIM, TP_ASCENDING>::bitonic_merge_main(
+    input_buffer<TT_DATA>& __restrict inWindow0,
+    input_buffer<TT_DATA>& __restrict inWindow1,
+    output_cascade<TT_DATA>* __restrict outCascade) {
+    T_inputIF<TT_DATA> inInterface;
+    T_outputIF<TT_DATA> outInterface;
+
+    inInterface.inWindow0 = inWindow0.data();
+    inInterface.inWindow1 = inWindow1.data();
+    outInterface.outCascade = outCascade;
+    this->mergeSortKernel(inInterface, outInterface);
+};
+}
+}
+}
+}
+
+#endif

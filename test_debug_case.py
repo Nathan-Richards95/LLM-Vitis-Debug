@@ -56,16 +56,16 @@ Return the full corrected contents of the file below:
 # Config
 config = Model.GenerationConfig(
     model_name="qwen",
-    max_tokens=1000,
+    max_tokens=1000000,
     temperature=0.2,
     top_p=0.9
 )
 
 # Run model
-path = "/home/jgvincen/CEN571Proj/LLM-Vitis-Debug/Collab_Models/qwen2.5-32b-aie-merged"
+path = "/scratch/jgvincen/models/qwen2.5-32b-aie-merged"
 model = Llama(config,path)
 
-max_attempts = 10
+max_attempts = 3
 final_code = None
 
 for attempt in range(1, max_attempts + 1):
@@ -108,6 +108,17 @@ Previous output:
 if final_code is None:
     print("Using last attempt")
     final_code = candidate
+
+# Print final output
+print("\n===== FINAL MODEL OUTPUT =====")
+print(final_code)
+
+# Save final output
+output_path = Path("Test_Cases/Debug005/llm_output/llm_out.cpp")
+output_path.parent.mkdir(parents=True, exist_ok=True)
+output_path.write_text(final_code)
+
+print(f"\nSaved output to: {output_path}")
 
 """
 response = model.generate([
