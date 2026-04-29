@@ -32,7 +32,7 @@ def looks_like_full_code(generated: str, original: str):
     return len(reasons) == 0, reasons
 
 # Load broken code
-broken_path = Path("Test_Cases/Debug005/broken/broken.cpp")
+broken_path = Path("Test_Cases/Debug002/broken/broken.cpp")
 broken_code = broken_path.read_text()
 
 # Build prompt
@@ -114,7 +114,7 @@ print("\n===== FINAL MODEL OUTPUT =====")
 print(final_code)
 
 # Save final output
-output_path = Path("Test_Cases/Debug005/llm_output/llm_out.cpp")
+output_path = Path("Test_Cases/Debug002/llm_output/llm_out.cpp")
 output_path.parent.mkdir(parents=True, exist_ok=True)
 output_path.write_text(final_code)
 
