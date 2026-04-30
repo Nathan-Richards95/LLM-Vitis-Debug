@@ -1,0 +1,6 @@
+{
+  "id": "debug_003",
+  "top_function": "gemm",
+  "bug_type": "missing_semicolon",
+  "difficulty": "easy"
+}

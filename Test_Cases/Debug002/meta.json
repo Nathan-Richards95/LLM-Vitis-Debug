@@ -1,0 +1,6 @@
+{
+  "id": "debug_002",
+  "top_function": "vector_add",
+  "bug_type": "missing_semicolon",
+  "difficulty": "easy"
+}

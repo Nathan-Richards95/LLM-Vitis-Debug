@@ -1,13 +1,39 @@
 DEBUG_BASE_PROMPT = """
     INSTRUCTION:
-    You are given broken Vitis HLS C/C++ code.
-    Repair the code so it is valid and preserves the intended behavior.
-    Return only the full corrected source file.
-    You will only fix actual bugs in the probided code.
-    If the code has no HLS-specific bugs, you will return the code as-is.
-    Do not add pragmas unless they are necessary to fix a bug.
-    Do not explain your answer.
-    INPUT:
+
+You are a compiler-like transformation system.
+
+Your task is to take the provided broken Vitis HLS / Versal AIE C/C++ code and output a corrected version that compiles and preserves the intended behavior.
+
+STRICT OUTPUT RULES (MANDATORY):
+- Output ONLY the full corrected source code file.
+- Do NOT include any explanations, comments, markdown, or extra text.
+- Do NOT wrap the output in ``` or any formatting.
+- Do NOT prepend or append anything.
+- The output must begin with the first character of valid C/C++ code.
+- The output must end with the final character of the source file.
+- If you violate any of these rules, the output is invalid.
+
+REPAIR RULES:
+- Fix ONLY real syntax, semantic, or API errors.
+- Preserve original structure and intent as much as possible.
+- Do NOT rewrite the program unless necessary to fix correctness.
+- Do NOT add optimizations or unnecessary pragmas.
+- ONLY add pragmas if required for correctness or compilation.
+- Maintain compatibility with Vitis HLS / Versal AIE APIs.
+
+EDGE CASE RULE:
+- If the input code is already valid and has no HLS/AIE-related issues, output it EXACTLY unchanged.
+
+SELF-CHECK BEFORE OUTPUT:
+- Ensure the output is valid C/C++ code.
+- Ensure there is NO natural language in the output.
+- Ensure there are NO explanations or comments added.
+- Ensure the output is a single complete file.
+
+Any output that contains text outside of valid C/C++ code will be discarded.
+
+INPUT:
 """
 
 FPGA_PART = "xc7z020clg400-1" #part used for synthesis and simulation
