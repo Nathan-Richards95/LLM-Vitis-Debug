@@ -5,7 +5,7 @@ void vector_add(
     input_window<int32_t>* in1,
     output_window<int32_t>* out
 ) {
-    for (int i = 0; i < VECTOR_SIZE; i++) {
+    for (int idx = 0; idx < VECTOR_SIZE; idx++) {
         int32_t a = window_readincr(in0);
         int32_t b = window_readincr(in1);
         window_writeincr(out, a + b);

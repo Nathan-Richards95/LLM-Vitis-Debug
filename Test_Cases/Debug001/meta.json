@@ -2,5 +2,6 @@
   "id": "debug_001",
   "top_function": "SingleStream::FIR_SingleStream<NSamples,ShiftAcc>::filter(input_stream_cint16* sin,output_stream_cint16* sout)",
   "bug_type": "missing_semicolon",
-  "difficulty": "easy"
+  "difficulty": "easy",
+  "bug_desc": "Missing semicolon"
 }

@@ -142,6 +142,7 @@ class Vitis_Helper:
         # Build the x86 component using Vitis       
         print("\n Building x86sim...") if self.verbose else None
         try:
+            x86_build_success = False
             print("Building x86sim...")
             self.aie_comp.build(target="x86sim")
         except Exception as e:
@@ -150,67 +151,91 @@ class Vitis_Helper:
                 print(self.aie_comp.get_report())
             except Exception:
                 pass
-            raise
+            return x86_build_success
+        build_success = True
         print("x86sim build complete.\n") if self.verbose else None
+        return build_success
 
     def run_x86_sim(self):
-        x86_sim_dir = self.workspace_dir / self.component_name / "build" / "x86sim"
-        data_dir = x86_sim_dir / "data"
-        data_dir.mkdir(parents=True, exist_ok=True)
-        src_file = self.input_file
-        dst_file_x86 = data_dir / "PhaseIn_0.txt"
-        if not src_file.exists():
-            print(f"Error: Expected source file {src_file} not found after x86sim build.")
-            return False
-        shutil.copy(src_file, dst_file_x86)
-        print(f"Copied x86sim input to: {dst_file_x86}") if self.verbose else None
-        print("Running x86sim executable...") if self.verbose else None
-        subprocess.run(
-            ["x86simulator"],
-            cwd = x86_sim_dir,
-            check = True
-        )
-        output_target = self.tc_dir / self.mode / "output.txt"   
-        x86_sim_output = x86_sim_dir / "x86simulator_output" / "data" / "Output_0.txt"
-        if not x86_sim_output.exists():
-            print(f"Error: Expected x86sim output file {x86_sim_output} not found after simulation.")
-            return False
-        shutil.copy(x86_sim_output, output_target)
-        print(f"Copied x86sim output to: {output_target}") if self.verbose else None    
-        print("x86sim execution complete.") if self.verbose else None
+        x86_sim_success = False
+        try:
+            x86_sim_dir = self.workspace_dir / self.component_name / "build" / "x86sim"
+            data_dir = x86_sim_dir / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            src_file = self.input_file
+            dst_file_x86 = data_dir / "PhaseIn_0.txt"
+            if not src_file.exists():
+                print(f"Error: Expected source file {src_file} not found after x86sim build.")
+                return False
+            shutil.copy(src_file, dst_file_x86)
+            print(f"Copied x86sim input to: {dst_file_x86}") if self.verbose else None
+            print("Running x86sim executable...") if self.verbose else None
+            subprocess.run(
+                ["x86simulator"],
+                cwd = x86_sim_dir,
+                check = True
+            )
+            output_target = self.tc_dir / self.mode / "output.txt"   
+            x86_sim_output = x86_sim_dir / "x86simulator_output" / "data" / "Output_0.txt"
+            if not x86_sim_output.exists():
+                print(f"Error: Expected x86sim output file {x86_sim_output} not found after simulation.")
+                return False
+            shutil.copy(x86_sim_output, output_target)
+            print(f"Copied x86sim output to: {output_target}") if self.verbose else None    
+            print("x86sim execution complete.") if self.verbose else None
+        except Exception as e:
+            print(f"x86sim execution failed: {e}")
+            return x86_sim_success
+        x86_sim_success = True
+        return x86_sim_success
 
     def build_component_hw(self):
         print("Building hardware...") if self.verbose else None
+        hw_build_success = False
         try:
             self.aie_comp.build(target="hw")
         except Exception as e:
             print(f"Hardware build failed: {e}")
-            raise
+            return hw_build_success
         print("Hardware build complete.") if self.verbose else None
+        return hw_build_success
 
     def run_hw_sim(self):
-        src_file = self.input_file
-        hw_build_dir = self.workspace_dir / self.component_name / "build" / "hw"
-        data_dir = hw_build_dir / "data"
-        data_dir.mkdir(parents=True, exist_ok=True)
-        dst_file_hw = data_dir / "PhaseIn_0.txt"
-        shutil.copy(src_file, dst_file_hw)
-        print(f"Copied hardware build input to: {dst_file_hw}") if self.verbose else None
-        subprocess.run(
-            ["aiesimulator", "--profile"],
-            cwd = hw_build_dir,
-            check = True
-        )
-        print("\nComponent Report:")
+        hw_sim_success = False
         try:
-            print(self.aie_comp.get_report())
-        except Exception:
-            print("Report call did not return printable output, but builds may still have succeeded.")
-        print("\nDone.")
-        print(f"Check outputs under: {self.workspace_dir / self.component_name}")
+            src_file = self.input_file
+            hw_build_dir = self.workspace_dir / self.component_name / "build" / "hw"
+            data_dir = hw_build_dir / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            dst_file_hw = data_dir / "PhaseIn_0.txt"
+            shutil.copy(src_file, dst_file_hw)
+            print(f"Copied hardware build input to: {dst_file_hw}") if self.verbose else None
+            subprocess.run(
+                ["aiesimulator", "--profile"],
+                cwd = hw_build_dir,
+                check = True
+            )
+            print("\nComponent Report:")
+            try:
+                print(self.aie_comp.get_report())
+            except Exception:
+                print("Report call did not return printable output, but builds may still have succeeded.")
+            print("\nDone.")
+            print(f"Check outputs under: {self.workspace_dir / self.component_name}")
+        except Exception as e:
+            print(f"Hardware simulation failed: {e}")
+            return hw_sim_success
+        hw_sim_success = True
+        return hw_sim_success
 
     def run_full_pipeline(self):
-        self.build_component_x86()
-        self.run_x86_sim()
-        self.build_component_hw()
-        self.run_hw_sim()
+        x86_build_success = self.build_component_x86()
+        x86_sim_success = self.run_x86_sim()
+        hw_build_success = self.build_component_hw()
+        hw_sim_success = self.run_hw_sim()
+        return {
+            "x86_build_success": x86_build_success,
+            "x86_sim_success": x86_sim_success,
+            "hw_build_success": hw_build_success,
+            "hw_sim_success": hw_sim_success
+        }

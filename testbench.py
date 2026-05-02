@@ -38,6 +38,14 @@ def initialize_model(model_type):
                             top_p=1.0
                         )
                 model = GPT_OSS_120b_raw(config=config)
+            elif model_type == "codestral_v6":
+                config = GenerationConfig(
+                            model_name=constants.CODESTRAL_V6_MODEL_NAME,
+                            temperature=0.2,
+                            max_tokens=2048,
+                            top_p=1.0
+                        )    
+                model = Llama(config=config)
         except Exception as e:
             print(f"An error occurred while initializing the model: {e}")
             exit(1)
@@ -69,16 +77,12 @@ def generate_message(tc, model_type, model):
         #2. grab the broken code and send it to the LLM
         print(f"Processing test case: {tc.name}")
         data = general_helper.load_testCases(tc, model_type)
+        bug_desc = data["bug_desc"]
         code = data["broken_code"]
         messages = [
-            {"role": "system", "content": constants.DEBUG_BASE_PROMPT},
-            {"role": "user", "content": f"{code}"}
+            {"role": "system", "content": constants.GENERATE_PROMPT(bug_desc)},
+            {"role": "user", "content": f"Code: {code}"}
         ]
-        #TODO: Check if the code if fully generated, and if the full code is not there,
-        #then keep sending it back in until we get a full response or 
-        #we hit a max number of retries.
-        #TODO: Also, try to strip any non code from the response
-        #TODO: Make sure to keep track if the LLM required trimming and the number of retries it needed
         output = model.generate(messages=messages)
         print(f"LLM output for test case {data['name']}:\n{output.text}\n")
         return data, output
@@ -103,7 +107,6 @@ def validate_output(output, data):
             empty = True
             print(f"Error for test case {data['name']}: {error}")
         print(f'{data["name"]} is not empty') if not empty else print(f'{data["name"]} is empty')
-        
         has_top = True
         if general_helper.has_top_level_cpp_function(output.text, data['meta']['top_function']) == False:
             print(f"Top level function is missing in the output for test case {data['name']}.")
@@ -115,6 +118,17 @@ def validate_output(output, data):
     except Exception as e:
         print(f"An error occurred while validating the output: {e}")
         return ["Error validating output."], False, False
+
+def write_output(tc, model_type, output):
+    # this function is just for us to be able to easily trasition from using
+    # the old way of just writing the whole output to a file and the new way
+    # utiliing git patch
+    patch_applied = None
+    llm_returned_patch = None
+    if not constants.USE_GIT_PATCH:
+        general_helper.write_llm_output(tc, model_type, output.text) 
+    else:
+        output_path, patch_applied, llm_returned_patch = general_helper.apply_git_patch(tc, model_type, output.text)
 
 def build_ref(tc, data):
     try:
@@ -141,7 +155,8 @@ def build_model(tc, model_type, data):
             tc_name = tc.name,
             mode = model.model_name
         )
-        model_vitis.run_full_pipeline()
+        versal_results = model_vitis.run_full_pipeline()
+        return versal_results
     except Exception as e:
         print(f"An error occurred while building the model: {e}")
 
@@ -169,7 +184,11 @@ def compare_outputs(tc, model_type, data):
         print(f"An error occurred while comparing the outputs: {e}")
         return False
 
-def write_results(model_type, timestamp, data, error, has_top, llm_output_correct, parseable_output, results_path):
+def write_results(
+    model_type, timestamp, data, error, has_top, llm_output_correct,
+    parseable_output, results_path, patch_applied, llm_returned_patch,
+    x86_build_success, x86_sim_success, hw_build_success, hw_sim_success
+):
     try:
         #open a json file in the results folder and append the results for this test case
         results_data = {
@@ -182,6 +201,14 @@ def write_results(model_type, timestamp, data, error, has_top, llm_output_correc
             "top_function_present": has_top,
             "correctness_pass": llm_output_correct,
             "difficulty": data['meta']['difficulty']
+            # git patch data
+            "llm_returned_patch" = llm_returned_patch
+            "patch_applied" = patch_applied
+            # vitis results
+            "x86_build_success" = x86_build_success
+            "x86_sim_success" = x86_sim_success
+            "hw_build_success" = hw_build_success
+            "hw_sim_success" = hw_sim_success
         }
         with open(results_path, "r+", encoding="utf-8") as f:
             existing_data = json.load(f)
@@ -192,7 +219,6 @@ def write_results(model_type, timestamp, data, error, has_top, llm_output_correc
         print(f"An error occurred while writing the results: {e}")
 
 def main():
-
     testcases = general_helper.get_testCases()
     model_type = argv[1] if len(argv) > 1 else "llama"
     model = initialize_model(model_type)
@@ -200,11 +226,16 @@ def main():
     for tc in testcases:
         data, output = generate_message(tc, model_type, model)
         errors, parseable_output, has_top = validate_output(output, data)
-        general_helper.write_llm_output(tc, model_type, output.text)
+        output_path, patch_applied, llm_returned_patch = write_output(tc, model_type, output.text)
         build_ref(tc, data)
-        build_model(tc, model_type, data)
+        versal_results = build_model(tc, model_type, data)
         llm_output_correct = compare_outputs(tc, model_type, data)
-        write_results(model_type, timestamp, data, errors, has_top, llm_output_correct, parseable_output, results_path)
+        write_results(
+            model_type, timestamp, data, errors, has_top, llm_output_correct, 
+            parseable_output, results_path, patch_applied, llm_returned_patch, 
+            versal_results["x86_build_success"], versal_results["x86_sim_success"], 
+            versal_results["hw_build_success"], versal_results["hw_sim_success"]
+        )
     general_helper.score_model(results_path)
 
 if __name__ == "__main__":

@@ -88,13 +88,13 @@ void SingleStream::FIR_SingleStream<NSamples,ShiftAcc>::filter(input_stream_cint
 		writeincr_v4(sout,srs(acc,ShiftAcc));
 		coeff -= 4;
 
-		MULMAC(29);
-		MACMAC(5);
-		MACMAC(13);
-		data = upd_v(data,7,readincr_v4(sin));
-		MACMAC(21);
-		writeincr_v4(sout,srs(acc,ShiftAcc));
-		coeff -= 4;
+		MULMAC(29)
+		MACMAC(5)
+		MACMAC(13)
+		data = upd_v(data,7,readincr_v4(sin))
+		MACMAC(21)
+		writeincr_v4(sout,srs(acc,ShiftAcc))
+		coeff -= 4
 	}
 
 	*ptr_delay_line = data;

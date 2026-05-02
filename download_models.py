@@ -1,29 +1,12 @@
 from huggingface_hub import snapshot_download
 from pathlib import Path
 import os
-
-MODEL_DIR = Path("/scratch") / os.environ["USER"] / "models"
-MODEL_DIR.mkdir(parents=True, exist_ok=True)
-
-AVAILABLE_MODELS = {
-    "1": {
-        "name": "codestral-22b-aie-merged",
-        "repo_id": "SiddharthaChekuri/codestral-22b-aie-merged"
-    },
-    "2": {
-        "name": "qwen2.5-32b-aie-merged",
-        "repo_id": "SiddharthaChekuri/qwen2.5-32b-aie-merged"
-    },
-    "3": {
-        "name": "qwen2.5-32b-aie-qlora",
-        "repo_id": "theonevk/qwen2.5-32b-aie-qlora"
-    }
-}
-
+import constants
 
 def main():
+    constants.MODEL_DIR.mkdir(parents=True, exist_ok=True)
     print("Available models:")
-    for key, info in AVAILABLE_MODELS.items():
+    for key, info in constants.AVAILABLE_MODELS.items():
         print(f"{key}. {info['name']} ({info['repo_id']})")
 
     print("\nEnter the numbers of the models you want to download.")
@@ -37,8 +20,8 @@ def main():
             print(f"Skipping invalid selection: {key}")
             continue
 
-        info = AVAILABLE_MODELS[key]
-        local_dir = MODEL_DIR / info["name"]
+        info = constants.AVAILABLE_MODELS[key]
+        local_dir = constants.MODEL_DIR / info["name"]
 
         print(f"\nDownloading {info['name']}...")
         print(f"Repo: {info['repo_id']}")

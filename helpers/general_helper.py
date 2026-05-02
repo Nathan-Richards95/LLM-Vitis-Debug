@@ -3,6 +3,7 @@ import constants
 from pathlib import Path
 import re
 import shutil
+import subprocess
 
 def score_model(results_data_path: str):
     #Iterates through all of the results from the json file and calculates a score
@@ -114,6 +115,39 @@ def write_llm_output(tc_path, model_type, llm_response):
         shutil.copytree(broken_dir, output_dir)
     output_path.write_text(cleaned_code, encoding="utf-8")
     return output_path
+
+def clean_patch(llm_response):
+    llm_returned_patch = False
+    cleaned_code = llm_response #TODO: Change this to be the properly cleaned code
+    return cleaned_code, llm_returned_patch
+
+def apply_git_patch(tc_path, model_type, llm_response):
+    cleaned_code, llm_returned_patch = clean_patch(llm_response) #TODO: Change this to be the properly cleaned code
+    output_dir = tc_path / model_type 
+    output_path = output_dir / "broken.cpp"
+    patch_path = output_dir / "patch.diff"
+    if not output_dir.exists():
+        broken_dir = tc_path / "broken"
+        shutil.copytree(broken_dir, output_dir)
+    # Apply git patch
+    patch_applied = False
+    patch_path.write_text(cleaned_code, encoding="utf-8")
+    check = subprocess.run(
+        ["git", "apply", "--check", str(patch_path.name)],
+        cwd=output_dir
+    )
+    if check.returncode == 0:
+        apply_result = subprocess.run(
+            ["git", "apply", patch_path.name],
+            cwd=output_dir,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE    
+        )
+        if apply_result.returncode == 0:
+            patch_applied = True
+
+    return output_path, patch_applied, llm_returned_patch
 
 def has_top_level_cpp_function(code: str, function_name: str) -> bool:
     # Matches return type + function name + (
