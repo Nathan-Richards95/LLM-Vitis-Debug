@@ -1,4 +1,18 @@
-DEBUG_BASE_PROMPT = """
+import os
+DEBUG_BASE_PROMPT = f"""You are fixing a broken C++ source file for AMD Vitis/AIE.
+
+Requirements:
+- Return the COMPLETE corrected source file
+- Do NOT return partial code
+- Do NOT omit unchanged code
+- Do NOT add explanations
+- Do NOT use markdown fences
+- Preserve all includes, declarations, and unchanged functions
+- Only fix the bug(s) needed
+"""
+
+
+"""
     INSTRUCTION:
 
 You are a compiler-like transformation system.
@@ -41,8 +55,16 @@ FPGA_PART = "xc7z020clg400-1" #part used for synthesis and simulation
 TARGET_CLOCK = 100 #target clock frequency in MHz
 
 #Llama constants
-LLAMA_PATH = "/scratch/schekur2/models/llama3.3-70b-hls-trained/"
-LLAMA_MODEL_NAME = "llama"
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Model paths
+CODESTRAL_PATH = os.path.join(REPO_ROOT, "Collab_Models", "codestral-22b-aie-merged")
+QWEN_PATH = os.path.join(REPO_ROOT, "Collab_Models", "qwen2.5-32b-aie-merged")
+
+# Default model (change this to switch models)
+LLAMA_PATH = QWEN_PATH
+
+LLAMA_MODEL_NAME = "qwen"
 
 #GPT OSS 120b constants
 GPT_OSS_120b_PATH = "/scratch/nrricha2/Versal_Project/Models/GPT_OSS_120b"

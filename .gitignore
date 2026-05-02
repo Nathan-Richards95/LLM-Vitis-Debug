@@ -14,9 +14,13 @@ vitis_journal.py
 
 #unused
 Unused/*
+<<<<<<< HEAD
+Collab_Models/*/
+=======
 
 #model weights cause they big
 Collab_Models/*
 
 #results
 Results/*
+>>>>>>> b6e7c5befd467316fdd2bb392bcfc248b71ef7ff

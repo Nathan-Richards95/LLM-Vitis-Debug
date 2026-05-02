@@ -1,6 +1,18 @@
 {
   "id": "debug_003",
-  "top_function": "gemm",
-  "bug_type": "missing_semicolon",
+  "debug_id": "Debug003",
+  "description": "AIE clipping kernel with incorrect upper-bound clipping behavior.",
+  "top_function": "clip_signal",
+  "kernel_name": "clip_kernel",
+  "bug_type": "logic_error",
+  "broken_file": "broken/broken.cpp",
+  "reference_file": "ref/ref.cpp",
+  "graph_file": "broken/graph.cpp",
+  "graph_header": "broken/graph.h",
+  "host_file": "broken/host.cpp",
+  "input_file": "broken/input.txt",
+  "num_samples": 32,
+  "expected_fix": "Change the high-value clipping output from 0 to 100.",
+  "expected_behavior": "Input values below 0 should become 0, values above 100 should become 100, and values between 0 and 100 should pass through unchanged.",
   "difficulty": "easy"
 }

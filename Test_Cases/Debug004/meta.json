@@ -1,0 +1,16 @@
+{
+  "debug_id": "Debug004",
+  "description": "AIE absolute value kernel where negative values are not converted to positive values.",
+  "top_function": "abs_signal",
+  "kernel_name": "abs_kernel",
+  "bug_type": "logic_error",
+  "broken_file": "broken/broken.cpp",
+  "reference_file": "ref/ref.cpp",
+  "graph_file": "broken/graph.cpp",
+  "graph_header": "broken/graph.h",
+  "host_file": "broken/host.cpp",
+  "input_file": "broken/input.txt",
+  "num_samples": 32,
+  "expected_fix": "Change the negative branch so output[i] = -input[i].",
+  "expected_behavior": "Each output sample should be the absolute value of the matching input sample."
+}
